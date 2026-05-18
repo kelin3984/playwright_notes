@@ -31,6 +31,8 @@
     - [🍀 0104 - headed vs headless](#-0104---headed-vs-headless)
     - [🍀 0105 - Playwright Test Runner](#-0105---playwright-test-runner)
     - [🍀 0106 - 專案結構](#-0106---專案結構)
+    - [🍀 0107 - playwright.config.ts 深度設定](#-0107---playwrightconfigts-深度設定)
+    - [🍀 0108 - CLI 常用指令](#-0108---cli-常用指令)
 - [💫Chapter 2 — Locator 與 DOM 操作](#chapter-2--locator-與-dom-操作)
   - [🧩學習目標](#學習目標-2)
   - [🧩章節內容](#章節內容-2)
@@ -139,6 +141,7 @@
     - [🍀 1106 - video](#-1106---video)
     - [🍀 1107 - console log](#-1107---console-log)
     - [🍀 1108 - network inspection](#-1108---network-inspection)
+    - [🍀 1109 - --last-failed / --shard](#-1109-----last-failed----shard)
 - [💫Chapter 12 — Visual Testing](#chapter-12--visual-testing)
   - [🧩學習目標](#學習目標-12)
   - [🧩章節內容](#章節內容-12)
@@ -181,6 +184,7 @@
     - [🍀 1604 - download automation](#-1604---download-automation)
     - [🍀 1605 - upload automation](#-1605---upload-automation)
     - [🍀 1606 - report automation](#-1606---report-automation)
+    - [🍀 1607 - PDF 生成](#-1607---pdf-生成)
 - [💫Chapter 17 — Playwright 進階原理](#chapter-17--playwright-進階原理)
   - [🧩學習目標](#學習目標-17)
   - [🧩章節內容](#章節內容-17)
@@ -198,6 +202,14 @@
     - [🍀 1803 - AI automation](#-1803---ai-automation)
     - [🍀 1804 - agentic browser](#-1804---agentic-browser)
     - [🍀 1805 - LLM + browser control](#-1805---llm--browser-control)
+- [💫Chapter 19 — Accessibility Testing（a11y）](#chapter-19--accessibility-testinga11y)
+  - [🧩學習目標](#學習目標-19)
+  - [🧩章節內容](#章節內容-19)
+    - [🍀 1901 - a11y 概念與重要性](#-1901---a11y-概念與重要性)
+    - [🍀 1902 - getByRole 與語意選取](#-1902---getbyrole-與語意選取)
+    - [🍀 1903 - axe-core 整合](#-1903---axe-core-整合)
+    - [🍀 1904 - ARIA 屬性驗證](#-1904---aria-屬性驗證)
+    - [🍀 1905 - keyboard navigation 測試](#-1905---keyboard-navigation-測試)
 - [推薦學習順序](#推薦學習順序)
 - [企業前端最重要章節](#企業前端最重要章節)
 - [最能拉開資深度的章節](#最能拉開資深度的章節)
@@ -225,6 +237,7 @@
 16. Browser Automation / RPA
 17. Playwright 進階原理
 18. AI Agent 與 Browser Agent
+19. Accessibility Testing（a11y）
 ```
 
 &nbsp;
@@ -341,6 +354,40 @@ context.newPage()
 ```txt
 tests/
 playwright.config.ts
+```
+
+---
+
+&nbsp;
+### 🍀 0107 - playwright.config.ts 深度設定
+
+重點：
+
+```txt
+projects（多瀏覽器 / 多環境）
+use（baseURL, viewport, locale…）
+webServer（自動啟動前端 dev server）
+reporter（html, json, github…）
+timeout / retries
+```
+
+---
+
+&nbsp;
+### 🍀 0108 - CLI 常用指令
+
+```bash
+# 執行指定檔案
+npx playwright test tests/login.spec.ts
+
+# 只跑上次失敗的測試
+npx playwright test --last-failed
+
+# 分片執行（CI 平行化）
+npx playwright test --shard=1/3
+
+# 指定 project
+npx playwright test --project=chromium
 ```
 
 ---
@@ -848,6 +895,20 @@ guest
 ---
 
 &nbsp;
+### 🍀 1109 - --last-failed / --shard
+
+```bash
+# 只重跑上次失敗
+npx playwright test --last-failed
+
+# CI 分片（把測試切成 N 份平行跑）
+npx playwright test --shard=1/4
+npx playwright test --shard=2/4
+```
+
+---
+
+&nbsp;
 # 💫Chapter 12 — Visual Testing
 
 ## 🧩學習目標
@@ -1032,6 +1093,19 @@ guest
 ---
 
 &nbsp;
+### 🍀 1607 - PDF 生成
+
+```ts
+await page.pdf({
+  path: 'report.pdf',
+  format: 'A4',
+  printBackground: true,
+})
+```
+
+---
+
+&nbsp;
 # 💫Chapter 17 — Playwright 進階原理
 
 ## 🧩學習目標
@@ -1106,12 +1180,73 @@ guest
 ---
 
 &nbsp;
+# 💫Chapter 19 — Accessibility Testing（a11y）
+
+## 🧩學習目標
+
+掌握無障礙測試，提升產品品質與合規性。
+
+&nbsp;
+## 🧩章節內容
+
+### 🍀 1901 - a11y 概念與重要性
+
+理解：
+
+```txt
+WCAG 標準
+ARIA roles
+為什麼 a11y 測試能提升測試品質
+```
+
+---
+
+&nbsp;
+### 🍀 1902 - getByRole 與語意選取
+
+理解 `getByRole` 本質就是 a11y 導向的選取策略。
+
+---
+
+&nbsp;
+### 🍀 1903 - axe-core 整合
+
+```ts
+import AxeBuilder from '@axe-core/playwright'
+
+const results = await new AxeBuilder({ page }).analyze()
+expect(results.violations).toEqual([])
+```
+
+---
+
+&nbsp;
+### 🍀 1904 - ARIA 屬性驗證
+
+```ts
+await expect(locator).toHaveAttribute('aria-label', '關閉')
+await expect(locator).toHaveAttribute('aria-expanded', 'true')
+```
+
+---
+
+&nbsp;
+### 🍀 1905 - keyboard navigation 測試
+
+```ts
+await page.keyboard.press('Tab')
+await page.keyboard.press('Enter')
+```
+
+---
+
+&nbsp;
 # 推薦學習順序
 
 ```txt
 0 → 1 → 2 → 3 → 5 → 6 → 7
 → 8 → 10 → 11 → 14
-→ 15 → 16 → 18
+→ 15 → 16 → 18 → 19
 ```
 
 ---
@@ -1129,6 +1264,7 @@ guest
 11 Debug
 14 CI/CD
 15 Testing Strategy
+19 Accessibility
 ```
 
 ---
@@ -1143,6 +1279,7 @@ guest
 15 Testing Strategy
 17 Playwright 原理
 18 AI Agent
+19 Accessibility
 ```
 
 &nbsp;
