@@ -11,6 +11,7 @@
   - [🍀 1601 - browser scripting](#-1601---browser-scripting)
     - [Library 模式 vs Test Runner 模式](#library-模式-vs-test-runner-模式)
     - [基本腳本結構](#基本腳本結構)
+    - [安裝與執行](#安裝與執行)
     - [最佳實踐](#最佳實踐)
     - [常見錯誤](#常見錯誤)
   - [🍀 1602 - crawling](#-1602---crawling)
@@ -47,6 +48,39 @@
     - [實際範例：電商訂單 PDF 報表](#實際範例電商訂單-pdf-報表)
     - [最佳實踐](#最佳實踐-6)
     - [常見錯誤](#常見錯誤-6)
+  - [⚡更多細節](#更多細節)
+    - [🍀 1601.01 - 保存與復用登入狀態（`storageState`）](#-160101---保存與復用登入狀態storagestate)
+      - [流程說明](#流程說明)
+      - [完整範例](#完整範例)
+      - [重點提示](#重點提示)
+    - [🍀 1601.02 - 錯誤處理與重試機制](#-160102---錯誤處理與重試機制)
+      - [通用重試工具](#通用重試工具)
+      - [使用範例](#使用範例)
+      - [退縮等待時間示意](#退縮等待時間示意)
+    - [🍀 1601.03 - 搭配排程工具自動執行](#-160103---搭配排程工具自動執行)
+      - [方案一：`node-cron`（本地排程）](#方案一node-cron本地排程)
+      - [方案二：GitHub Actions `schedule`（雲端排程）](#方案二github-actions-schedule雲端排程)
+      - [方案比較](#方案比較)
+    - [🍀 1602.01 - 無限捲動（Infinite Scroll）爬取](#-160201---無限捲動infinite-scroll爬取)
+      - [核心策略](#核心策略)
+      - [完整範例](#完整範例-1)
+    - [🍀 1602.02 - 登入後爬取受保護內容](#-160202---登入後爬取受保護內容)
+    - [🍀 1602.03 - 反爬蟲對策](#-160203---反爬蟲對策)
+      - [常見反爬蟲機制與對策](#常見反爬蟲機制與對策)
+      - [使用 `playwright-extra` Stealth 插件](#使用-playwright-extra-stealth-插件)
+    - [🍀 1603.01 - 帶重試機制的健壯自動化封裝](#-160301---帶重試機制的健壯自動化封裝)
+    - [🍀 1603.02 - 多頁面並行操作（Concurrency 控制）](#-160302---多頁面並行操作concurrency-控制)
+      - [並行策略比較](#並行策略比較)
+    - [🍀 1604.01 - 攔截 Network Response 取得下載 URL](#-160401---攔截-network-response-取得下載-url)
+    - [🍀 1605.01 - 記憶體內容直接上傳（不需要實體檔案）](#-160501---記憶體內容直接上傳不需要實體檔案)
+      - [使用情境](#使用情境)
+    - [🍀 1606.01 - 生成 HTML 視覺化報告](#-160601---生成-html-視覺化報告)
+    - [🍀 1606.02 - 差異比對監控報告](#-160602---差異比對監控報告)
+    - [🍀 1607.01 - 從 HTML 模板生成發票 PDF（完整範例）](#-160701---從-html-模板生成發票-pdf完整範例)
+    - [🍀 1607.02 - CSS `@media print` 列印排版技巧](#-160702---css-media-print-列印排版技巧)
+      - [常用 `@media print` 技巧](#常用-media-print-技巧)
+      - [在 Playwright 中動態注入 Print CSS](#在-playwright-中動態注入-print-css)
+      - [`page-break` 屬性速查](#page-break-屬性速查)
 
 ---
 
@@ -1052,6 +1086,1060 @@ generatePdfFromHtml(invoiceHtml, './invoice-INV-2026-001.pdf')
 | PDF 生成後中文顯示為方塊 | 在 HTML 中明確引入支援中文的字型 |
 | 頁面含有動畫，PDF 截取到中間狀態 | 呼叫 `pdf()` 前先 `waitForLoadState('networkidle')` 並暫停動畫 |
 | 使用截圖代替 PDF | 截圖生成的是點陣圖，文字無法複製；真正需要列印品質請用 `page.pdf()` |
+
+---
+
+&nbsp;
+
+## ⚡更多細節
+
+### 🍀 1601.01 - 保存與復用登入狀態（`storageState`）
+
+每次腳本執行都重新登入，不僅耗時，也容易觸發帳號鎖定。Playwright 的 `storageState` 能將 cookies 與 localStorage 序列化存檔，下次直接復用。
+
+#### 流程說明
+
+```txt
+首次執行：登入 → context.storageState() 序列化 → 寫入 auth.json
+後續執行：讀取 auth.json → newContext({ storageState }) → 跳過登入
+偵測失效：嘗試訪問受保護頁面 → 若被導向 /login 則重新登入並更新 auth.json
+```
+
+#### 完整範例
+
+```typescript
+import { chromium, BrowserContext } from 'playwright'
+import * as fs from 'fs'
+
+const AUTH_FILE = './auth.json'
+
+async function saveAuthState(): Promise<void> {
+  const browser = await chromium.launch({ headless: true })
+  const context: BrowserContext = await browser.newContext()
+  const page = await context.newPage()
+
+  await page.goto('https://admin.example.com/login')
+  await page.getByLabel('帳號').fill(process.env.ADMIN_EMAIL ?? '')
+  await page.getByLabel('密碼').fill(process.env.ADMIN_PASSWORD ?? '')
+  await page.getByRole('button', { name: '登入' }).click()
+  await page.waitForURL('**/dashboard')
+
+  // 序列化目前的 cookies + localStorage
+  await context.storageState({ path: AUTH_FILE })
+  console.log(`✅ 已儲存登入狀態到 ${AUTH_FILE}`)
+
+  await browser.close()
+}
+
+async function runWithSavedAuth(): Promise<void> {
+  // 若 auth.json 不存在，先執行登入流程
+  if (!fs.existsSync(AUTH_FILE)) {
+    await saveAuthState()
+  }
+
+  const browser = await chromium.launch({ headless: true })
+  const context: BrowserContext = await browser.newContext({
+    storageState: AUTH_FILE, // 直接注入已保存的登入狀態
+  })
+  const page = await context.newPage()
+
+  try {
+    await page.goto('https://admin.example.com/dashboard')
+
+    // 偵測 Session 是否過期（被導向登入頁）
+    if (page.url().includes('/login')) {
+      console.warn('⚠️ Session 已過期，重新登入...')
+      await browser.close()
+      await saveAuthState()          // 重新登入並更新 auth.json
+      return runWithSavedAuth()       // 遞迴重試
+    }
+
+    console.log('已使用保存的 Session，跳過登入流程')
+    // ... 執行主要自動化任務
+  } finally {
+    await browser.close()
+  }
+}
+
+runWithSavedAuth()
+```
+
+#### 重點提示
+
+| 項目 | 說明 |
+|------|------|
+| `storageState` 包含的內容 | cookies、localStorage、sessionStorage |
+| 安全注意事項 | `auth.json` 含敏感資訊，必須加入 `.gitignore` |
+| Session 有效期 | 依網站設定而異，建議腳本偵測是否被導向登入頁 |
+| 多帳號情境 | 為每個帳號建立獨立的 `auth-{role}.json` |
+
+---
+
+&nbsp;
+
+### 🍀 1601.02 - 錯誤處理與重試機制
+
+網路波動、目標網站短暫異常都可能導致單次操作失敗。透過通用的重試工具函式，可讓腳本更具彈性。
+
+#### 通用重試工具
+
+```typescript
+interface RetryOptions {
+  maxAttempts?: number    // 最大嘗試次數（含第一次），預設 3
+  delayMs?: number        // 每次重試前的等待毫秒，預設 1000
+  backoff?: boolean       // 是否啟用指數退縮，預設 true
+}
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  options: RetryOptions = {}
+): Promise<T> {
+  const { maxAttempts = 3, delayMs = 1000, backoff = true } = options
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn()
+    } catch (error) {
+      lastError = error
+      if (attempt === maxAttempts) break
+
+      const wait = backoff ? delayMs * 2 ** (attempt - 1) : delayMs
+      console.warn(`⚠️ 第 ${attempt} 次失敗，${wait}ms 後重試...`, error)
+      await new Promise((resolve) => setTimeout(resolve, wait))
+    }
+  }
+
+  throw lastError
+}
+```
+
+#### 使用範例
+
+```typescript
+// 將任意操作包進 withRetry
+const result = await withRetry(
+  async () => {
+    await page.goto('https://admin.example.com/orders')
+    await page.waitForSelector('.order-list', { timeout: 8000 })
+    return await page.locator('.order-row').count()
+  },
+  { maxAttempts: 3, delayMs: 1500, backoff: true }
+)
+
+console.log(`訂單筆數：${result}`)
+```
+
+#### 退縮等待時間示意
+
+| 嘗試次數 | `delayMs=1000` + `backoff=true` | `backoff=false` |
+|----------|--------------------------------|-----------------|
+| 第 1 次失敗後 | 1000 ms | 1000 ms |
+| 第 2 次失敗後 | 2000 ms | 1000 ms |
+| 第 3 次失敗後 | 4000 ms（若仍有重試） | 1000 ms |
+
+---
+
+&nbsp;
+
+### 🍀 1601.03 - 搭配排程工具自動執行
+
+自動化腳本通常需要定期執行。常見方案有本地端的 `node-cron`，以及 CI/CD 的 GitHub Actions `schedule`。
+
+#### 方案一：`node-cron`（本地排程）
+
+```typescript
+import cron from 'node-cron'
+import { runDailyReport } from './report'
+
+// 每天早上 8:00 執行
+cron.schedule('0 8 * * *', async () => {
+  console.log(`[${new Date().toISOString()}] 開始執行每日報表...`)
+  try {
+    await runDailyReport()
+    console.log('✅ 報表執行完成')
+  } catch (error) {
+    console.error('❌ 報表執行失敗：', error)
+  }
+}, {
+  timezone: 'Asia/Taipei',
+})
+
+console.log('排程已啟動，等待執行...')
+```
+
+安裝：
+
+```bash
+npm install node-cron
+npm install -D @types/node-cron
+```
+
+#### 方案二：GitHub Actions `schedule`（雲端排程）
+
+```yaml
+# .github/workflows/daily-report.yml
+name: Daily Report
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # UTC 00:00 = 台北 08:00
+  workflow_dispatch:        # 允許手動觸發
+
+jobs:
+  run-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run automation script
+        run: npx ts-node scripts/daily-report.ts
+        env:
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+```
+
+#### 方案比較
+
+| 面向 | `node-cron` | GitHub Actions |
+|------|-------------|----------------|
+| 執行環境 | 本地機器需保持開機 | 雲端，無需本地機器 |
+| 設定複雜度 | 簡單 | 需撰寫 YAML |
+| 機密管理 | `.env` 檔 | Secrets + 環境變數 |
+| 適合情境 | 開發 / 內部自動化 | CI/CD、正式部署 |
+
+---
+
+&nbsp;
+
+### 🍀 1602.01 - 無限捲動（Infinite Scroll）爬取
+
+部分網站不使用分頁，而是捲動到底部時動態載入更多內容。需要循環捲動並偵測「無新資料」的終止條件。
+
+#### 核心策略
+
+```txt
+記錄目前項目數
+  → 捲動到頁面最底部
+  → 等待網路請求完成
+  → 再次計算項目數
+  → 若項目數未增加，計數器 +1
+  → 若計數器超過 MAX_NO_NEW 次，視為載入完畢
+```
+
+#### 完整範例
+
+```typescript
+import { chromium } from 'playwright'
+
+interface Article {
+  title: string
+  url: string
+  publishedAt: string
+}
+
+async function crawlInfiniteScroll(url: string): Promise<Article[]> {
+  const browser = await chromium.launch({ headless: true })
+  const page = await browser.newPage()
+
+  try {
+    await page.goto(url)
+    await page.waitForLoadState('networkidle')
+
+    const MAX_NO_NEW = 3  // 連續 N 次無新內容後停止
+    let noNewCount = 0
+    let prevCount = 0
+
+    while (noNewCount < MAX_NO_NEW) {
+      // 捲動到頁面底部
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+      // 等待動態載入
+      await page.waitForLoadState('networkidle')
+      await page.waitForTimeout(800)
+
+      const currentCount = await page.locator('.article-card').count()
+
+      if (currentCount > prevCount) {
+        console.log(`已載入 ${currentCount} 筆，繼續捲動...`)
+        prevCount = currentCount
+        noNewCount = 0
+      } else {
+        noNewCount++
+        console.log(`無新資料（${noNewCount}/${MAX_NO_NEW}）`)
+      }
+    }
+
+    // 資料全部載入後，一次性擷取
+    const articles = await page.$$eval('.article-card', (cards) =>
+      cards.map((card) => ({
+        title: card.querySelector('.title')?.textContent?.trim() ?? '',
+        url: (card.querySelector('a') as HTMLAnchorElement)?.href ?? '',
+        publishedAt: card.querySelector('.date')?.textContent?.trim() ?? '',
+      }))
+    )
+
+    console.log(`✅ 共擷取 ${articles.length} 篇文章`)
+    return articles
+  } finally {
+    await browser.close()
+  }
+}
+```
+
+---
+
+&nbsp;
+
+### 🍀 1602.02 - 登入後爬取受保護內容
+
+需要授權的內容（會員專區、後台資料）必須先登入再爬取。結合 `storageState` 可避免每次重新登入。
+
+```typescript
+import { chromium } from 'playwright'
+import * as fs from 'fs'
+
+const AUTH_FILE = './auth.json'
+
+async function crawlProtectedContent(targetUrl: string) {
+  if (!fs.existsSync(AUTH_FILE)) {
+    throw new Error('尚未登入，請先執行 saveAuthState()')
+  }
+
+  const browser = await chromium.launch({ headless: true })
+  const context = await browser.newContext({ storageState: AUTH_FILE })
+  const page = await context.newPage()
+
+  try {
+    await page.goto(targetUrl)
+
+    // 偵測是否被重導向至登入頁（Session 過期）
+    if (page.url().includes('/login')) {
+      throw new Error('Session 已過期，請重新執行登入流程')
+    }
+
+    await page.waitForLoadState('networkidle')
+
+    // 爬取受保護資料
+    const rows = await page.$$eval('table tbody tr', (trs) =>
+      trs.map((tr) =>
+        Array.from(tr.querySelectorAll('td')).map(
+          (td) => td.textContent?.trim() ?? ''
+        )
+      )
+    )
+
+    return rows
+  } finally {
+    await browser.close()
+  }
+}
+```
+
+---
+
+&nbsp;
+
+### 🍀 1602.03 - 反爬蟲對策
+
+許多網站會偵測並封鎖自動化瀏覽器。以下是常見的對抗策略：
+
+#### 常見反爬蟲機制與對策
+
+| 反爬蟲機制 | 對策 |
+|----------|------|
+| 偵測 `navigator.webdriver` 標記 | 使用 `playwright-extra` + `puppeteer-extra-plugin-stealth` |
+| 封鎖 headless User-Agent | 設定真實瀏覽器 UA 字串 |
+| 請求頻率過高 | 加入隨機等待時間 `500~2000ms` |
+| 滑鼠軌跡分析 | 使用 `page.mouse.move()` 模擬真實移動 |
+| IP 封鎖 | 搭配 Proxy 輪替（`proxy` in `newContext`） |
+| CAPTCHA | 使用第三方解碼服務（如 2captcha），或降低爬取頻率 |
+
+#### 使用 `playwright-extra` Stealth 插件
+
+```typescript
+import { chromium } from 'playwright-extra'
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
+
+// 套用 stealth 插件（抹除自動化特徵）
+chromium.use(StealthPlugin())
+
+async function crawlWithStealth() {
+  const browser = await chromium.launch({ headless: true })
+  const context = await browser.newContext({
+    userAgent:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+      '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    locale: 'zh-TW',
+    timezoneId: 'Asia/Taipei',
+  })
+  const page = await context.newPage()
+
+  // 模擬隨機等待（人類操作不會精確到毫秒）
+  const randomDelay = () =>
+    page.waitForTimeout(800 + Math.floor(Math.random() * 1200))
+
+  await page.goto('https://target.example.com')
+  await randomDelay()
+
+  // ... 操作
+  await browser.close()
+}
+```
+
+安裝：
+
+```bash
+npm install playwright-extra puppeteer-extra-plugin-stealth
+```
+
+---
+
+&nbsp;
+
+### 🍀 1603.01 - 帶重試機制的健壯自動化封裝
+
+將 `withRetry`（見 1601.02）應用到具體的 RPA 操作流程，讓整個批次任務更為堅固。
+
+```typescript
+import { Page } from 'playwright'
+
+// 帶重試的訂單確認操作
+async function confirmOrderWithRetry(
+  page: Page,
+  orderId: string
+): Promise<void> {
+  await withRetry(
+    async () => {
+      await page.goto(`https://admin.example.com/orders/${orderId}`)
+      await page.waitForSelector('.order-detail', { timeout: 8000 })
+
+      const statusText = await page
+        .locator('.order-status')
+        .textContent()
+      if (statusText?.includes('已確認')) {
+        console.log(`訂單 ${orderId} 已是確認狀態，跳過`)
+        return
+      }
+
+      await page.getByRole('button', { name: '確認訂單' }).click()
+      // 等待成功 Toast 出現
+      await page.waitForSelector('.toast-success', { timeout: 5000 })
+      console.log(`✅ 訂單 ${orderId} 確認成功`)
+    },
+    { maxAttempts: 3, delayMs: 2000 }
+  )
+}
+
+// 批次處理訂單
+async function batchConfirmOrders(
+  page: Page,
+  orderIds: string[]
+): Promise<void> {
+  const results = { success: 0, fail: 0 }
+
+  for (const orderId of orderIds) {
+    try {
+      await confirmOrderWithRetry(page, orderId)
+      results.success++
+    } catch (error) {
+      console.error(`❌ 訂單 ${orderId} 最終失敗：`, error)
+      results.fail++
+    }
+  }
+
+  console.log(
+    `\n批次完成：成功 ${results.success} 筆，失敗 ${results.fail} 筆`
+  )
+}
+```
+
+---
+
+&nbsp;
+
+### 🍀 1603.02 - 多頁面並行操作（Concurrency 控制）
+
+對獨立任務使用 `Promise.all` 並行執行，可大幅縮短總耗時。但需控制最大並行數，避免超載目標網站或本機資源。
+
+```typescript
+import { Browser, BrowserContext } from 'playwright'
+
+interface ProcessItem {
+  id: string
+  data: Record<string, string>
+}
+
+// 並行處理，每批最多 CONCURRENCY 個
+async function processItemsInParallel(
+  browser: Browser,
+  items: ProcessItem[],
+  concurrency = 3
+): Promise<void> {
+  // 將 items 切成每批 concurrency 個
+  for (let i = 0; i < items.length; i += concurrency) {
+    const batch = items.slice(i, i + concurrency)
+
+    // 每個 item 使用獨立的 context（隔離 Session / cookie）
+    await Promise.all(
+      batch.map(async (item) => {
+        const context: BrowserContext = await browser.newContext({
+          storageState: './auth.json',
+        })
+        const page = await context.newPage()
+
+        try {
+          await page.goto(`https://admin.example.com/items/${item.id}`)
+          // ... 執行操作
+          console.log(`✅ 完成：${item.id}`)
+        } catch (error) {
+          console.error(`❌ 失敗：${item.id}`, error)
+        } finally {
+          await context.close() // 每個任務結束後關閉 context
+        }
+      })
+    )
+
+    console.log(`批次 ${Math.ceil((i + concurrency) / concurrency)} 完成`)
+  }
+}
+```
+
+#### 並行策略比較
+
+| 策略 | 說明 | 適合情境 |
+|------|------|----------|
+| 單一 `page`，逐一執行 | 安全、無風險 | 操作有依賴順序、網站有 rate limit |
+| 多 `context` 並行 | 最隔離、最穩定 | 完全獨立的任務（推薦） |
+| 同一 `context` 多 `page` | Cookies 共享 | 需要同一登入 Session 的並行操作 |
+
+---
+
+&nbsp;
+
+### 🍀 1604.01 - 攔截 Network Response 取得下載 URL
+
+有些下載按鈕不直接觸發 `download` 事件，而是先打 API 取得一個暫時下載 URL，再由前端跳轉。此時需監聽 network response 來攔截該 URL。
+
+```typescript
+import { chromium, Response } from 'playwright'
+import * as https from 'https'
+import * as fs from 'fs'
+
+async function interceptAndDownload(
+  reportId: string,
+  outputPath: string
+): Promise<void> {
+  const browser = await chromium.launch({ headless: true })
+  const context = await browser.newContext({ storageState: './auth.json' })
+  const page = await context.newPage()
+
+  try {
+    let downloadUrl: string | null = null
+
+    // 監聽所有 Response，找到含下載 URL 的 API 回應
+    page.on('response', async (response: Response) => {
+      if (!response.url().includes('/api/reports/download')) return
+
+      try {
+        const body = await response.json()
+        if (body?.downloadUrl) {
+          downloadUrl = body.downloadUrl as string
+          console.log('攔截到下載 URL：', downloadUrl)
+        }
+      } catch {
+        // 非 JSON response，忽略
+      }
+    })
+
+    await page.goto(`https://admin.example.com/reports/${reportId}`)
+    await page.getByRole('button', { name: '匯出' }).click()
+
+    // 等待 downloadUrl 被設定（最多 10 秒）
+    await page.waitForFunction(() => (window as any).__dlReady, { timeout: 10000 })
+      .catch(() => {/* 用輪詢替代 */})
+
+    // 輪詢等待 downloadUrl
+    const start = Date.now()
+    while (!downloadUrl && Date.now() - start < 10000) {
+      await page.waitForTimeout(300)
+    }
+
+    if (!downloadUrl) throw new Error('無法取得下載 URL')
+
+    // 直接用 Node.js 下載
+    await new Promise<void>((resolve, reject) => {
+      const file = fs.createWriteStream(outputPath)
+      https.get(downloadUrl!, (res) => {
+        res.pipe(file)
+        file.on('finish', () => { file.close(); resolve() })
+      }).on('error', reject)
+    })
+
+    console.log(`✅ 下載完成：${outputPath}`)
+  } finally {
+    await browser.close()
+  }
+}
+```
+
+---
+
+&nbsp;
+
+### 🍀 1605.01 - 記憶體內容直接上傳（不需要實體檔案）
+
+`setInputFiles` 支援傳入 `{ name, mimeType, buffer }` 物件，可直接上傳程式動態產生的內容，無需先寫到磁碟。
+
+```typescript
+import { chromium } from 'playwright'
+
+async function uploadGeneratedContent(): Promise<void> {
+  const browser = await chromium.launch({ headless: true })
+  const context = await browser.newContext({ storageState: './auth.json' })
+  const page = await context.newPage()
+
+  try {
+    await page.goto('https://admin.example.com/import')
+
+    // 範例 1：上傳動態生成的 CSV（不需要寫入磁碟）
+    const csvContent = [
+      'name,email,role',
+      'Alice,alice@example.com,editor',
+      'Bob,bob@example.com,viewer',
+    ].join('\n')
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'users.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csvContent, 'utf-8'),
+    })
+
+    // 範例 2：上傳含 BOM 的 UTF-8 CSV（Excel 正確顯示中文必備）
+    const BOM = Buffer.from([0xef, 0xbb, 0xbf])  // UTF-8 BOM
+    const csvWithBom = Buffer.concat([
+      BOM,
+      Buffer.from('姓名,電子郵件,部門\n王小明,wang@example.com,工程部', 'utf-8'),
+    ])
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'employees.csv',
+      mimeType: 'text/csv',
+      buffer: csvWithBom,
+    })
+
+    await page.getByRole('button', { name: '開始匯入' }).click()
+    await page.waitForSelector('.import-success', { timeout: 10000 })
+    console.log('✅ 記憶體內容上傳成功')
+  } finally {
+    await browser.close()
+  }
+}
+```
+
+#### 使用情境
+
+| 情境 | 做法 |
+|------|------|
+| 上傳動態產生的 CSV / JSON | `Buffer.from(content, 'utf-8')` |
+| Excel 開啟中文不亂碼 | 加入 UTF-8 BOM（`0xEF 0xBB 0xBF`） |
+| 上傳從 API 取得的二進位資料 | `Buffer.from(apiResponse.data)` |
+| 測試上傳功能（不需要真實檔案） | 傳入模擬的 buffer 即可 |
+
+---
+
+&nbsp;
+
+### 🍀 1606.01 - 生成 HTML 視覺化報告
+
+將自動化截圖與擷取的資料整合成單一 HTML 報告，方便分發給非技術人員查閱。
+
+```typescript
+import * as fs from 'fs'
+import * as path from 'path'
+
+interface SectionResult {
+  title: string
+  screenshotPath: string
+  metrics: Array<{ label: string; value: string }>
+  capturedAt: string
+}
+
+function generateHtmlReport(
+  results: SectionResult[],
+  outputPath: string
+): void {
+  const sectionsHtml = results
+    .map((section) => {
+      // 將截圖轉為 base64 嵌入 HTML（報告完全自包含）
+      const imgBuffer = fs.readFileSync(section.screenshotPath)
+      const base64 = imgBuffer.toString('base64')
+      const mimeType = 'image/png'
+
+      const metricsHtml = section.metrics
+        .map(
+          (m) => `
+          <tr>
+            <td style="padding:6px 12px;border-bottom:1px solid #eee;color:#666;">${m.label}</td>
+            <td style="padding:6px 12px;border-bottom:1px solid #eee;font-weight:bold;">${m.value}</td>
+          </tr>`
+        )
+        .join('')
+
+      return `
+        <div style="margin-bottom:40px;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
+          <div style="background:#1a1a2e;color:white;padding:12px 20px;">
+            <h2 style="margin:0;font-size:18px;">${section.title}</h2>
+            <small style="opacity:0.7;">擷取時間：${section.capturedAt}</small>
+          </div>
+          <div style="display:flex;gap:20px;padding:20px;">
+            <img src="data:${mimeType};base64,${base64}"
+                 style="max-width:60%;border:1px solid #ddd;border-radius:4px;" />
+            <table style="flex:1;height:fit-content;border-collapse:collapse;">
+              ${metricsHtml}
+            </table>
+          </div>
+        </div>`
+    })
+    .join('')
+
+  const html = `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>自動化監控報告 — ${new Date().toLocaleDateString('zh-TW')}</title>
+  <style>
+    body { font-family: 'Noto Sans TC', sans-serif; max-width: 1200px; margin: 40px auto; padding: 0 20px; color: #333; }
+    h1 { border-bottom: 3px solid #1a1a2e; padding-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <h1>📊 自動化監控報告</h1>
+  <p>報告生成時間：${new Date().toLocaleString('zh-TW')}</p>
+  ${sectionsHtml}
+</body>
+</html>`
+
+  fs.writeFileSync(outputPath, html, 'utf-8')
+  console.log(`✅ HTML 報告已生成：${outputPath}`)
+}
+```
+
+---
+
+&nbsp;
+
+### 🍀 1606.02 - 差異比對監控報告
+
+定期爬取關鍵數值並與上次快照比對，若有差異則發出警示。適合競品監控、商品價格追蹤等情境。
+
+```typescript
+import * as fs from 'fs'
+
+interface Snapshot {
+  capturedAt: string
+  items: Array<{ id: string; name: string; value: string }>
+}
+
+interface DiffResult {
+  id: string
+  name: string
+  oldValue: string
+  newValue: string
+}
+
+function compareSnapshots(
+  prevSnapshot: Snapshot,
+  currSnapshot: Snapshot
+): DiffResult[] {
+  const prevMap = new Map(prevSnapshot.items.map((i) => [i.id, i]))
+  const diffs: DiffResult[] = []
+
+  for (const curr of currSnapshot.items) {
+    const prev = prevMap.get(curr.id)
+    if (prev && prev.value !== curr.value) {
+      diffs.push({
+        id: curr.id,
+        name: curr.name,
+        oldValue: prev.value,
+        newValue: curr.value,
+      })
+    }
+  }
+
+  return diffs
+}
+
+// 典型使用流程：價格監控
+async function priceMonitor(): Promise<void> {
+  const SNAPSHOT_FILE = './price-snapshot.json'
+
+  // 爬取今日價格（省略爬取細節，見 1602）
+  const todaySnapshot: Snapshot = {
+    capturedAt: new Date().toISOString(),
+    items: [
+      { id: 'prod-001', name: 'Playwright 課程', value: 'NT$1,999' },
+      { id: 'prod-002', name: '技術顧問包月', value: 'NT$8,800' },
+    ],
+  }
+
+  if (fs.existsSync(SNAPSHOT_FILE)) {
+    const prevSnapshot: Snapshot = JSON.parse(
+      fs.readFileSync(SNAPSHOT_FILE, 'utf-8')
+    )
+    const diffs = compareSnapshots(prevSnapshot, todaySnapshot)
+
+    if (diffs.length > 0) {
+      console.log(`\n⚠️ 偵測到 ${diffs.length} 項變動：`)
+      diffs.forEach((d) =>
+        console.log(`  ${d.name}：${d.oldValue} → ${d.newValue}`)
+      )
+      // 可在此接入 Email / Slack 通知
+    } else {
+      console.log('✅ 無變動')
+    }
+  }
+
+  // 更新快照
+  fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(todaySnapshot, null, 2))
+}
+```
+
+---
+
+&nbsp;
+
+### 🍀 1607.01 - 從 HTML 模板生成發票 PDF（完整範例）
+
+使用 `page.setContent()` 搭配精心設計的 HTML 模板，可不依賴任何後端產生樣式精美的 PDF 發票。
+
+```typescript
+import { chromium } from 'playwright'
+
+interface InvoiceItem {
+  description: string
+  quantity: number
+  unitPrice: number
+}
+
+interface Invoice {
+  invoiceNo: string
+  issueDate: string
+  customerName: string
+  customerEmail: string
+  items: InvoiceItem[]
+}
+
+function buildInvoiceHtml(invoice: Invoice): string {
+  const fmt = (n: number) =>
+    new Intl.NumberFormat('zh-TW', {
+      style: 'currency',
+      currency: 'TWD',
+      minimumFractionDigits: 0,
+    }).format(n)
+
+  const total = invoice.items.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0
+  )
+  const tax = Math.round(total * 0.05)
+
+  const itemsHtml = invoice.items
+    .map(
+      (item) => `
+      <tr>
+        <td>${item.description}</td>
+        <td class="num">${item.quantity}</td>
+        <td class="num">${fmt(item.unitPrice)}</td>
+        <td class="num">${fmt(item.quantity * item.unitPrice)}</td>
+      </tr>`
+    )
+    .join('')
+
+  return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans TC', sans-serif; padding: 40px; color: #333; font-size: 14px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+    .logo { font-size: 28px; font-weight: 700; color: #1a1a2e; }
+    .invoice-meta { text-align: right; }
+    .invoice-no { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .customer-box { background: #f8f9fa; border-left: 4px solid #1a1a2e; padding: 16px 20px; margin-bottom: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    thead tr { background: #1a1a2e; color: white; }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #eee; }
+    .num { text-align: right; }
+    .total-section { text-align: right; }
+    .total-row { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+    .footer { margin-top: 60px; text-align: center; color: #999; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="logo">My Company</div>
+      <div style="color:#666;margin-top:4px;">mycompany.example.com</div>
+    </div>
+    <div class="invoice-meta">
+      <div class="invoice-no">發票 ${invoice.invoiceNo}</div>
+      <div style="color:#666;margin-top:4px;">開立日期：${invoice.issueDate}</div>
+    </div>
+  </div>
+
+  <div class="customer-box">
+    <div style="font-weight:700;margin-bottom:4px;">客戶資訊</div>
+    <div>${invoice.customerName}</div>
+    <div style="color:#666;">${invoice.customerEmail}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>品項說明</th><th class="num">數量</th><th class="num">單價</th><th class="num">小計</th></tr>
+    </thead>
+    <tbody>
+      ${itemsHtml}
+    </tbody>
+  </table>
+
+  <div class="total-section">
+    <div style="margin-bottom:6px;">小計：${fmt(total)}</div>
+    <div style="margin-bottom:6px;">稅額（5%）：${fmt(tax)}</div>
+    <div class="total-row">總計：${fmt(total + tax)}</div>
+  </div>
+
+  <div class="footer">
+    感謝您的惠顧！如有疑問請聯繫 billing@mycompany.example.com
+  </div>
+</body>
+</html>`
+}
+
+async function generateInvoicePdf(
+  invoice: Invoice,
+  outputPath: string
+): Promise<void> {
+  const browser = await chromium.launch({ headless: true })
+  const page = await browser.newPage()
+
+  try {
+    const html = buildInvoiceHtml(invoice)
+    await page.setContent(html, { waitUntil: 'networkidle' })
+
+    await page.pdf({
+      path: outputPath,
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' },
+    })
+
+    console.log(`✅ 發票 PDF 已生成：${outputPath}`)
+  } finally {
+    await browser.close()
+  }
+}
+
+// 使用範例
+generateInvoicePdf(
+  {
+    invoiceNo: 'INV-2026-042',
+    issueDate: '2026-05-19',
+    customerName: '測試科技股份有限公司',
+    customerEmail: 'contact@testtech.example.com',
+    items: [
+      { description: 'Playwright 自動化顧問服務', quantity: 8, unitPrice: 1500 },
+      { description: '技術文件撰寫', quantity: 1, unitPrice: 3000 },
+    ],
+  },
+  './invoices/INV-2026-042.pdf'
+)
+```
+
+---
+
+&nbsp;
+
+### 🍀 1607.02 - CSS `@media print` 列印排版技巧
+
+PDF 輸出實際上走的是瀏覽器列印管道，因此所有 `@media print` CSS 規則都會生效。善用這點可精確控制 PDF 版面。
+
+#### 常用 `@media print` 技巧
+
+```css
+@media print {
+  /* 隱藏不需要出現在 PDF 的元素 */
+  .sidebar, nav, .print-hide { display: none !important; }
+
+  /* 避免在元素中間自動分頁 */
+  .invoice-item, table tr { page-break-inside: avoid; }
+
+  /* 強制在特定元素前分頁（每張訂單佔一頁）*/
+  .order-card { page-break-before: always; }
+
+  /* 強制在特定元素後分頁 */
+  .chapter-end { page-break-after: always; }
+
+  /* 設定背景色需搭配 -webkit-print-color-adjust */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+```
+
+#### 在 Playwright 中動態注入 Print CSS
+
+```typescript
+import { Page } from 'playwright'
+
+async function injectPrintStyles(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const style = document.createElement('style')
+    style.textContent = `
+      @media print {
+        .no-print { display: none !important; }
+        .page-break { page-break-before: always; }
+        body { font-size: 12pt; }
+        a { color: inherit; text-decoration: none; }
+      }
+    `
+    document.head.appendChild(style)
+  })
+}
+
+// 使用範例：在生成 PDF 前注入樣式
+async function generateWithCustomPrintStyle(
+  page: Page,
+  outputPath: string
+): Promise<void> {
+  await page.goto('https://admin.example.com/report/monthly')
+  await page.waitForLoadState('networkidle')
+
+  // 動態注入列印樣式
+  await injectPrintStyles(page)
+
+  await page.pdf({
+    path: outputPath,
+    format: 'A4',
+    printBackground: true,
+  })
+}
+```
+
+#### `page-break` 屬性速查
+
+| CSS 屬性 | 值 | 效果 |
+|----------|-----|------|
+| `page-break-before` | `always` | 此元素前強制分頁 |
+| `page-break-after` | `always` | 此元素後強制分頁 |
+| `page-break-inside` | `avoid` | 禁止在此元素內部分頁 |
+| `orphans` | `3`（數字） | 段落結尾最少保留幾行在同頁 |
+| `widows` | `3`（數字） | 段落開頭最少保留幾行在同頁 |
+
+> **注意**：現代 CSS 規範已改用 `break-before` / `break-after` / `break-inside`，但 Chromium 仍完整支援舊版 `page-break-*` 屬性。
 
 ---
 
