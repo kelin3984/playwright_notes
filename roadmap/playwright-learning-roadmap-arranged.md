@@ -1,5 +1,3 @@
-
-
 # Playwright 學習章節地圖（前端工程師通用版）
 
 > 版本：Frontend General Roadmap
@@ -198,45 +196,44 @@
   - [🧩學習目標](#學習目標-18)
   - [🧩章節內容](#章節內容-18)
     - [🍀 1801 - LLM + Browser Control 演進趨勢](#-1801---llm--browser-control-演進趨勢)
-    - [🍀 1802 - 三種路線比較：MCP vs CLI+Skills vs Agent Loop](#-1802---三種路線比較mcp-vs-cliskills-vs-agent-loop)
+    - [🍀 1802 - 三種官方路線比較：MCP vs CLI+Skills vs Test Agents](#-1802---三種官方路線比較mcp-vs-cliskills-vs-test-agents)
     - [🍀 1803 - Accessibility Tree 作為 AI 頁面表示的核心](#-1803---accessibility-tree-作為-ai-頁面表示的核心)
-    - [🍀 1804 - Vision mode vs Snapshot mode](#-1804---vision-mode-vs-snapshot-mode)
-    - [🍀 1805 - agentic browser 設計模式](#-1805---agentic-browser-設計模式)
-- [💫Chapter 19 — Playwright Agents](#chapter-19--playwright-agents)
+    - [🍀 1804 - Snapshot mode vs Vision mode：優勢與限制](#-1804---snapshot-mode-vs-vision-mode優勢與限制)
+    - [🍀 1805 - agentic browser 共通流程與適用邊界](#-1805---agentic-browser-共通流程與適用邊界)
+- [💫Chapter 19 — Playwright MCP Server](#chapter-19--playwright-mcp-server)
   - [🧩學習目標](#學習目標-19)
   - [🧩章節內容](#章節內容-19)
-    - [🍀 1901 - Agent Loop 模式](#-1901---agent-loop-模式)
-    - [🍀 1902 - self-healing test](#-1902---self-healing-test)
-    - [🍀 1903 - autonomous test generation](#-1903---autonomous-test-generation)
-    - [🍀 1904 - Playwright 作為 Agent 的 browser tool](#-1904---playwright-作為-agent-的-browser-tool)
-    - [🍀 1905 - agent tracing 與 debug 策略](#-1905---agent-tracing-與-debug-策略)
-    - [🍀 1906 - 多 Agent 協作](#-1906---多-agent-協作)
-- [💫Chapter 20 — Playwright MCP Server](#chapter-20--playwright-mcp-server)
+    - [🍀 1901 - 什麼是 MCP 與 @playwright/mcp](#-1901---什麼是-mcp-與-playwrightmcp)
+    - [🍀 1902 - 連接 AI Client 與使用情境](#-1902---連接-ai-client-與使用情境)
+    - [🍀 1903 - Tool 類別、caps 與版本敏感設定](#-1903---tool-類別caps-與版本敏感設定)
+    - [🍀 1904 - User Profile、Extension 與 Headless 模式](#-1904---user-profileextension-與-headless-模式)
+    - [🍀 1905 - 安全邊界與風險控管](#-1905---安全邊界與風險控管)
+    - [🍀 1906 - codegen、trace 與 CI 實務](#-1906---codegentrace-與-ci-實務)
+- [💫Chapter 20 — Playwright CLI](#chapter-20--playwright-cli)
   - [🧩學習目標](#學習目標-20)
   - [🧩章節內容](#章節內容-20)
-    - [🍀 2001 - 什麼是 MCP 與 @playwright/mcp](#-2001---什麼是-mcp-與-playwrightmcp)
-    - [🍀 2002 - 安裝與連接 AI Client](#-2002---安裝與連接-ai-client)
-    - [🍀 2003 - Tool 類別與 --caps 選用功能模組](#-2003---tool-類別與---caps-選用功能模組)
-    - [🍀 2004 - User Profile 三種模式](#-2004---user-profile-三種模式)
-    - [🍀 2005 - --codegen 自動產生測試程式碼](#-2005-----codegen-自動產生測試程式碼)
-    - [🍀 2006 - Chrome Extension 連接現有瀏覽器](#-2006---chrome-extension-連接現有瀏覽器)
-    - [🍀 2007 - Standalone Server（headless / CI 環境）](#-2007---standalone-serverheadless--ci-環境)
-- [💫Chapter 21 — Playwright CLI](#chapter-21--playwright-cli)
+    - [🍀 2001 - @playwright/cli 安裝與定位](#-2001---playwrightcli-安裝與定位)
+    - [🍀 2002 - open / attach 與 session 基本模型](#-2002---open--attach-與-session-基本模型)
+    - [🍀 2003 - 常用命令：goto、click、fill、snapshot](#-2003---常用命令gotoclickfillsnapshot)
+    - [🍀 2004 - 多 session 管理與 Monitoring Dashboard](#-2004---多-session-管理與-monitoring-dashboard)
+    - [🍀 2005 - CLI 適合的工作型態與限制](#-2005---cli-適合的工作型態與限制)
+- [💫Chapter 21 — Playwright Skills](#chapter-21--playwright-skills)
   - [🧩學習目標](#學習目標-21)
   - [🧩章節內容](#章節內容-21)
-    - [🍀 2101 - @playwright/cli 安裝與定位](#-2101---playwrightcli-安裝與定位)
-    - [🍀 2102 - 完整指令集實戰](#-2102---完整指令集實戰)
-    - [🍀 2103 - Session 管理（多 session 並行）](#-2103---session-管理多-session-並行)
-    - [🍀 2104 - playwright-cli show Monitoring Dashboard](#-2104---playwright-cli-show-monitoring-dashboard)
-    - [🍀 2105 - Spec-driven testing 流程](#-2105---spec-driven-testing-流程)
-- [💫Chapter 22 — Playwright Skills](#chapter-22--playwright-skills)
+    - [🍀 2101 - Skills 是什麼](#-2101---skills-是什麼)
+    - [🍀 2102 - playwright-cli install --skills](#-2102---playwright-cli-install---skills)
+    - [🍀 2103 - Skills、Instructions 與 Agent 發現機制](#-2103---skillsinstructions-與-agent-發現機制)
+    - [🍀 2104 - 自訂 SKILL.md 的設計原則](#-2104---自訂-skillmd-的設計原則)
+    - [🍀 2105 - Claude Code / GitHub Copilot / 其他 Client 差異](#-2105---claude-code--github-copilot--其他-client-差異)
+- [💫Chapter 22 — Playwright Test Agents](#chapter-22--playwright-test-agents)
   - [🧩學習目標](#學習目標-22)
   - [🧩章節內容](#章節內容-22)
-    - [🍀 2201 - Skills 是什麼](#-2201---skills-是什麼)
-    - [🍀 2202 - playwright-cli install --skills](#-2202---playwright-cli-install---skills)
-    - [🍀 2203 - Skills 目錄與 coding agent 自動發現](#-2203---skills-目錄與-coding-agent-自動發現)
-    - [🍀 2204 - 自訂 Skills（撰寫 SKILL.md）](#-2204---自訂-skills撰寫-skillmd)
-    - [🍀 2205 - Skills 在 Claude Code / GitHub Copilot 中的實際運作](#-2205---skills-在-claude-code--github-copilot-中的實際運作)
+    - [🍀 2201 - 什麼是 Playwright Test Agents](#-2201---什麼是-playwright-test-agents)
+    - [🍀 2202 - planner / generator / healer 的角色](#-2202---planner--generator--healer-的角色)
+    - [🍀 2203 - Spec-driven workflow：seed.spec.ts → specs → tests](#-2203---spec-driven-workflowseedspects--specs--tests)
+    - [🍀 2204 - self-healing 與 human review 邊界](#-2204---self-healing-與-human-review-邊界)
+    - [🍀 2205 - tracing、debug 與 observability](#-2205---tracingdebug-與-observability)
+    - [🍀 2206 - 適用情境、限制與導入策略](#-2206---適用情境限制與導入策略)
 - [💫Chapter 23 — Accessibility Testing（a11y）](#chapter-23--accessibility-testinga11y)
   - [🧩學習目標](#學習目標-23)
   - [🧩章節內容](#章節內容-23)
@@ -272,10 +269,10 @@
 16. Browser Automation / RPA
 17. Playwright 進階原理
 18. AI 時代的 Browser Automation 概觀
-19. Playwright Agents
-20. Playwright MCP Server
-21. Playwright CLI
-22. Playwright Skills
+19. Playwright MCP Server
+20. Playwright CLI
+21. Playwright Skills
+22. Playwright Test Agents
 23. Accessibility Testing（a11y）
 ```
 
@@ -362,7 +359,7 @@ npm init playwright@latest
 ### 🍀 0102 - 第一個測試
 
 ```ts
-test('homepage', async ({ page }) => {}
+test('homepage', async ({ page }) => {})
 ```
 
 ---
@@ -1188,7 +1185,7 @@ await page.pdf({
 
 ## 🧩學習目標
 
-建立 AI browser automation 的心智模型，理解各工具的定位與選擇依據。
+建立 AI browser automation 的心智模型，理解各工具的定位、限制與選擇依據。
 
 &nbsp;
 ## 🧩章節內容
@@ -1196,52 +1193,71 @@ await page.pdf({
 &nbsp;
 ### 🍀 1801 - LLM + Browser Control 演進趨勢
 
-理解從傳統 script → RPA → AI-driven automation 的演進脈絡：
+理解從傳統 script → AI-assisted automation 的演進脈絡：
 
 ```txt
 手寫 Playwright script
-→ Codegen 輔助錄製
-→ LLM 生成測試
-→ Agent 自主操控瀏覽器
+→ Codegen / 錄製輔助原型
+→ LLM 輔助產生測試與腳本
+→ Agent 參與規劃、執行、修復
 ```
 
 ---
 
 &nbsp;
-### 🍀 1802 - 三種路線比較：MCP vs CLI+Skills vs Agent Loop
+### 🍀 1802 - 三種官方路線比較：MCP vs CLI+Skills vs Test Agents
 
 | 路線 | 代表工具 | 適用情境 |
 |---|---|---|
 | MCP Server | `@playwright/mcp` | AI Client 長期操控瀏覽器 |
-| CLI + Skills | `@playwright/cli` | Coding agent 呼叫瀏覽器指令 |
-| Agent Loop | agentic browser | LLM 自主推理、行動、觀察循環 |
+| CLI + Skills | `@playwright/cli` + `SKILL.md` | Coding agent 高效率呼叫瀏覽器指令 |
+| Test Agents | Playwright Test Agents | 規格導向測試生成、修復與維護 |
+
+補充：
+
+```txt
+三條路線的底層都可能使用 Observe → Plan → Act → Verify 的 agent 模式，
+差別在於介面形式、持久狀態、適用任務與人機分工比例。
+```
 
 ---
 
 &nbsp;
 ### 🍀 1803 - Accessibility Tree 作為 AI 頁面表示的核心
 
-理解為什麼 AI 操控瀏覽器不依賴截圖，而是使用 Accessibility Tree（結構化快照）：
+理解為什麼 AI 操控瀏覽器常優先使用 Accessibility Tree（結構化快照）：
 
 ```txt
 截圖 → 需要視覺模型（高 token、高延遲）
 Accessibility Tree → 結構化文字（低 token、高精度）
 ```
 
----
-
-&nbsp;
-### 🍀 1804 - Vision mode vs Snapshot mode
+但也要理解限制：
 
 ```txt
-Snapshot mode（預設）：使用 Accessibility Tree
-Vision mode（--caps=vision）：使用座標點擊，需視覺模型
+canvas / chart / 地圖 / 純視覺佈局
+自訂元件語意不完整
+需依座標互動的拖拉與繪圖場景
 ```
 
 ---
 
 &nbsp;
-### 🍀 1805 - agentic browser 設計模式
+### 🍀 1804 - Snapshot mode vs Vision mode：優勢與限制
+
+```txt
+Snapshot mode（預設）：使用 Accessibility Tree
+優點：低 token、可結構化推理、適合表單與一般網頁操作
+
+Vision mode：依賴畫面與座標
+優點：可處理純視覺元素、canvas、圖表、座標操作
+代價：較慢、較貴、穩定性依賴畫面品質
+```
+
+---
+
+&nbsp;
+### 🍀 1805 - agentic browser 共通流程與適用邊界
 
 理解：
 
@@ -1253,166 +1269,106 @@ Observe（快照頁面）
 → 循環
 ```
 
----
-
-&nbsp;
-# 💫Chapter 19 — Playwright Agents
-
-## 🧩學習目標
-
-理解 Agent Loop 的本質與如何用 Playwright 建立能自主運作的瀏覽器 agent。
-
-&nbsp;
-## 🧩章節內容
-
-&nbsp;
-### 🍀 1901 - Agent Loop 模式
-
-理解 agent 的推理行動循環：
+也要知道什麼情境不該優先使用 agent：
 
 ```txt
-Observe → Plan → Act → Verify → Loop
+高風險金流 / 刪除操作
+嚴格合規或需明確審批的流程
+已有穩定 deterministic script 的核心流程
 ```
 
 ---
 
 &nbsp;
-### 🍀 1902 - self-healing test
-
-理解測試自動修復：當 locator 失效時，agent 自動偵測並修復 selector。
-
----
-
-&nbsp;
-### 🍀 1903 - autonomous test generation
-
-理解從使用者描述（自然語言）→ agent 自主生成可執行測試的流程。
-
----
-
-&nbsp;
-### 🍀 1904 - Playwright 作為 Agent 的 browser tool
-
-理解 Playwright 在 agent 架構中的角色：
-
-```txt
-LLM（大腦）
-↓
-Playwright（手）：執行 click / fill / snapshot…
-```
-
----
-
-&nbsp;
-### 🍀 1905 - agent tracing 與 debug 策略
-
-使用 Playwright Trace Viewer 分析 agent 每一步的行為，定位失敗原因。
-
----
-
-&nbsp;
-### 🍀 1906 - 多 Agent 協作
-
-理解 orchestrator agent + sub-agent 分工模式，多個 browser session 並行處理任務。
-
----
-
-&nbsp;
-# 💫Chapter 20 — Playwright MCP Server
+# 💫Chapter 19 — Playwright MCP Server
 
 ## 🧩學習目標
 
-學會透過 Model Context Protocol 讓 AI Client 直接操控瀏覽器。
+學會透過 Model Context Protocol 讓 AI Client 直接操控瀏覽器，並理解其能力邊界。
 
 &nbsp;
 ## 🧩章節內容
 
 &nbsp;
-### 🍀 2001 - 什麼是 MCP 與 @playwright/mcp
+### 🍀 1901 - 什麼是 MCP 與 @playwright/mcp
 
 ```bash
 npx @playwright/mcp@latest
 ```
 
-透過 MCP 協議暴露瀏覽器工具給 AI Client（Claude Desktop、VS Code、Cursor 等）。
+透過 MCP 協議暴露瀏覽器工具給 AI Client（例如 Claude Desktop、VS Code、Cursor 等）。
 
 ---
 
 &nbsp;
-### 🍀 2002 - 安裝與連接 AI Client
+### 🍀 1902 - 連接 AI Client 與使用情境
 
-支援的 AI Client：
+適合情境：
 
 ```txt
-Claude Desktop
-VS Code（GitHub Copilot）
-Cursor
-Windsurf
-Goose
+AI Client 長期操控瀏覽器
+需要持久 session / profile
+需要多輪觀察與操作
 ```
 
 ---
 
 &nbsp;
-### 🍀 2003 - Tool 類別與 --caps 選用功能模組
+### 🍀 1903 - Tool 類別、caps 與版本敏感設定
 
 ```txt
 核心（預設）：click、fill、hover、snapshot、tab 管理…
---caps=network：網路攔截
---caps=storage：cookies、localStorage
---caps=devtools：console log、requests
---caps=vision：座標點擊（Vision mode）
---caps=pdf：匯出 PDF
---caps=testing：測試斷言工具
---caps=codegen：產生測試程式碼
+選用能力可能包含：network、storage、devtools、vision、pdf、testing…
+```
+
+重點：
+
+```txt
+不同版本的 flags / caps / 功能集合可能變動
+文件中應標記「版本敏感內容，需定期驗證」
 ```
 
 ---
 
 &nbsp;
-### 🍀 2004 - User Profile 三種模式
+### 🍀 1904 - User Profile、Extension 與 Headless 模式
 
 ```txt
 Persistent（預設）：儲存在本機 profile
-Isolated（--isolated）：每次會話獨立，關閉即清除
-Browser Extension（--extension）：連接現有已登入的 Chrome
+Isolated：每次會話獨立，關閉即清除
+Browser Extension：連接既有已登入瀏覽器
+Headless：適合 CI / server 環境
 ```
 
 ---
 
 &nbsp;
-### 🍀 2005 - --codegen 自動產生測試程式碼
+### 🍀 1905 - 安全邊界與風險控管
 
-```bash
-npx @playwright/mcp@latest --caps=codegen
-```
+理解以下觀念：
 
-AI 操作瀏覽器的同時，自動產生對應的 Playwright TypeScript 測試程式碼。
-
----
-
-&nbsp;
-### 🍀 2006 - Chrome Extension 連接現有瀏覽器
-
-```bash
-npx @playwright/mcp@latest --extension
-```
-
-連接已登入的 Chrome 分頁，無需重新驗證。
-
----
-
-&nbsp;
-### 🍀 2007 - Standalone Server（headless / CI 環境）
-
-```bash
-npx @playwright/mcp@latest --headless --port 3000
+```txt
+MCP 不是 security boundary
+需考慮 allowed / blocked origins
+需注意 secrets、下載檔案、檔案系統存取與 profile 汙染
+需避免多個 client 同時搶用同一 persistent profile
 ```
 
 ---
 
 &nbsp;
-# 💫Chapter 21 — Playwright CLI
+### 🍀 1906 - codegen、trace 與 CI 實務
+
+```txt
+codegen：可作為操作示範與測試草稿來源
+trace / console / network：作為觀測與除錯核心
+headless / port：適合 server 與 CI 整合
+```
+
+---
+
+&nbsp;
+# 💫Chapter 20 — Playwright CLI
 
 ## 🧩學習目標
 
@@ -1422,7 +1378,7 @@ npx @playwright/mcp@latest --headless --port 3000
 ## 🧩章節內容
 
 &nbsp;
-### 🍀 2101 - @playwright/cli 安裝與定位
+### 🍀 2001 - @playwright/cli 安裝與定位
 
 ```bash
 npm install -g @playwright/cli@latest
@@ -1431,22 +1387,34 @@ npm install -g @playwright/cli@latest
 與 MCP 的核心差異：
 
 ```txt
-CLI + Skills：Token 高效，不載入 schema，適合大型程式碼庫
-MCP：Rich introspection，適合持久狀態、長期自主流程
+CLI：較輕量、命令導向、適合快速呼叫與大型程式碼庫
+MCP：較適合持久狀態、多輪互動與 rich tool integration
 ```
 
 ---
 
 &nbsp;
-### 🍀 2102 - 完整指令集實戰
+### 🍀 2002 - open / attach 與 session 基本模型
+
+先理解：
+
+```txt
+CLI 並不是只有單次命令
+通常要先建立或附加 session，再對該 session 持續操作
+```
+
+---
+
+&nbsp;
+### 🍀 2003 - 常用命令：goto、click、fill、snapshot
 
 核心操作：
 
 ```bash
-playwright-cli goto https://example.com
+playwright-cli open https://example.com
+playwright-cli snapshot
 playwright-cli click [ref]
 playwright-cli fill [ref] "text"
-playwright-cli snapshot          # 取得 Accessibility Tree
 playwright-cli screenshot
 playwright-cli eval "document.title"
 ```
@@ -1454,42 +1422,29 @@ playwright-cli eval "document.title"
 ---
 
 &nbsp;
-### 🍀 2103 - Session 管理（多 session 並行）
-
-```bash
-playwright-cli -s=admin goto https://app.example.com/admin
-playwright-cli -s=user  goto https://app.example.com/user
-
-playwright-cli list        # 列出所有 session
-playwright-cli close-all   # 關閉全部
-```
-
----
-
-&nbsp;
-### 🍀 2104 - playwright-cli show Monitoring Dashboard
-
-```bash
-playwright-cli show
-```
-
-即時 Session Grid：所有 session 的縮圖、URL、頁標，支援遠端接管滑鼠鍵盤。
-
----
-
-&nbsp;
-### 🍀 2105 - Spec-driven testing 流程
+### 🍀 2004 - 多 session 管理與 Monitoring Dashboard
 
 ```txt
-1. plan   → 根據需求描述規劃測試案例
-2. generate → 自動產生 .spec.ts
-3. heal   → 測試失敗時自動修復 locator
+可同時維護 admin / user / guest 等 session
+可查看 session 清單、狀態與 dashboard
+適合多角色流程與 agent 協作場景
 ```
 
 ---
 
 &nbsp;
-# 💫Chapter 22 — Playwright Skills
+### 🍀 2005 - CLI 適合的工作型態與限制
+
+```txt
+適合：快速操作、低額外上下文成本、命令式自動化
+限制：較不適合長期持久狀態與高度 schema 驅動的互動
+spec-driven workflow 不應與單一 CLI 子命令混為一談
+```
+
+---
+
+&nbsp;
+# 💫Chapter 21 — Playwright Skills
 
 ## 🧩學習目標
 
@@ -1499,57 +1454,139 @@ playwright-cli show
 ## 🧩章節內容
 
 &nbsp;
-### 🍀 2201 - Skills 是什麼
+### 🍀 2101 - Skills 是什麼
 
-Skills 是 Markdown 格式的「任務說明書」，放置在 coding agent 可讀取的目錄（如 `.claude/skills/`）中，告訴 agent 有哪些指令可用、如何使用。
+Skills 是給 agent 讀取的任務說明與操作慣例。
 
 ```txt
 Skills ≠ 工具本身
-Skills = 教 agent 怎麼用工具的說明文件
+Skills = 教 agent 何時、如何、安全地用工具
 ```
 
 ---
 
 &nbsp;
-### 🍀 2202 - playwright-cli install --skills
+### 🍀 2102 - playwright-cli install --skills
 
 ```bash
 playwright-cli install --skills
 ```
 
-自動將 `SKILL.md` 寫入 agent 可讀取的目錄。
+用途：安裝可被 agent 讀取的 skill 文件或範本。
 
 ---
 
 &nbsp;
-### 🍀 2203 - Skills 目錄與 coding agent 自動發現
+### 🍀 2103 - Skills、Instructions 與 Agent 發現機制
 
 ```txt
-~/.claude/skills/playwright/SKILL.md   ← Claude Code 全域讀取
-.claude/skills/playwright/SKILL.md     ← 專案層級讀取
+Skills 是 instruction layer，不是 runtime layer
+不同 agent / client 的發現方式、目錄、命名規則可能不同
+文件應區分「概念共通」與「client-specific 實作」
 ```
 
-Agent 啟動時自動掃描並載入，無需手動告知。
-
 ---
 
 &nbsp;
-### 🍀 2204 - 自訂 Skills（撰寫 SKILL.md）
-
-可自行撰寫 `SKILL.md`，定義專案特有的自動化任務說明，讓 agent 了解自訂流程。
-
----
-
-&nbsp;
-### 🍀 2205 - Skills 在 Claude Code / GitHub Copilot 中的實際運作
-
-理解 agent 讀取 Skills 後的行為：
+### 🍀 2104 - 自訂 SKILL.md 的設計原則
 
 ```txt
-agent 讀取 SKILL.md
-→ 了解可呼叫的 CLI 指令
-→ 自行決定何時呼叫、呼叫哪個指令
-→ 執行任務
+描述適用任務
+列出可用指令與範例
+加上 guardrails、禁止操作、輸出格式要求
+避免把易變的 CLI 細節寫死
+```
+
+---
+
+&nbsp;
+### 🍀 2105 - Claude Code / GitHub Copilot / 其他 Client 差異
+
+```txt
+有些 client 會自動發現 skills
+有些 client 主要依靠 workspace instructions / tool schema
+不要把單一 client 的目錄規則當成所有 agent 的通則
+```
+
+---
+
+&nbsp;
+# 💫Chapter 22 — Playwright Test Agents
+
+## 🧩學習目標
+
+理解官方 Playwright Test Agents 的角色，學會 spec-driven 測試生成、修復與人機協作。
+
+&nbsp;
+## 🧩章節內容
+
+&nbsp;
+### 🍀 2201 - 什麼是 Playwright Test Agents
+
+理解這不是泛稱的 agent loop，而是針對 Playwright Test 工作流設計的 agent 能力。
+
+---
+
+&nbsp;
+### 🍀 2202 - planner / generator / healer 的角色
+
+```txt
+planner：根據需求整理測試案例與策略
+generator：產生測試檔與步驟
+healer：在失敗後協助修復 locator 與測試內容
+```
+
+---
+
+&nbsp;
+### 🍀 2203 - Spec-driven workflow：seed.spec.ts → specs → tests
+
+理解典型流程：
+
+```txt
+seed.spec.ts：提供初始種子與範圍
+specs/：整理需求、案例、測試規格
+tests/：產生或維護可執行的 Playwright 測試
+```
+
+---
+
+&nbsp;
+### 🍀 2204 - self-healing 與 human review 邊界
+
+```txt
+agent 可協助修復，但不代表應完全自動合併
+核心業務流程、破壞性操作、權限相關變更仍需人工審查
+```
+
+---
+
+&nbsp;
+### 🍀 2205 - tracing、debug 與 observability
+
+```txt
+trace viewer
+console / network logs
+agent 執行紀錄
+PR review 與 diff 檢查
+```
+
+---
+
+&nbsp;
+### 🍀 2206 - 適用情境、限制與導入策略
+
+適合：
+
+```txt
+需求規格明確、測試案例可描述、團隊接受 agent 協作
+```
+
+限制：
+
+```txt
+不是所有 flaky test 都能靠 healer 解決
+測試資料、環境穩定度、review 流程仍是成功關鍵
 ```
 
 ---
@@ -1639,8 +1676,9 @@ await page.keyboard.press('Enter')
 11 Debug
 14 CI/CD
 15 Testing Strategy
-20 Playwright MCP
-21 Playwright CLI
+19 Playwright MCP
+20 Playwright CLI
+22 Playwright Test Agents
 23 Accessibility
 ```
 
@@ -1656,10 +1694,10 @@ await page.keyboard.press('Enter')
 15 Testing Strategy
 17 Playwright 原理
 18 AI 時代概觀
-19 Playwright Agents
-20 Playwright MCP
-21 Playwright CLI
-22 Playwright Skills
+19 Playwright MCP
+20 Playwright CLI
+21 Playwright Skills
+22 Playwright Test Agents
 23 Accessibility
 ```
 
