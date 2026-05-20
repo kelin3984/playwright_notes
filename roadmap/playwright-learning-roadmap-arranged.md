@@ -82,13 +82,21 @@
   - [🧩學習目標](#學習目標-6)
   - [🧩章節內容](#章節內容-6)
     - [🍀 0601 - waitForResponse](#-0601---waitforresponse)
+      - [等待指定 API 回應完成](#等待指定-api-回應完成)
     - [🍀 0602 - route interception](#-0602---route-interception)
+      - [攔截、放行、阻擋與改寫 request](#攔截放行阻擋與改寫-request)
     - [🍀 0603 - mock API](#-0603---mock-api)
+      - [建立可重現的前端測試情境](#建立可重現的前端測試情境)
     - [🍀 0604 - modify response](#-0604---modify-response)
+      - [保留真後端流程，只局部改寫回應](#保留真後端流程只局部改寫回應)
     - [🍀 0605 - fake backend](#-0605---fake-backend)
+      - [用有狀態的假後端支撐前端流程](#用有狀態的假後端支撐前端流程)
     - [🍀 0606 - network idle](#-0606---network-idle)
+      - [理解 `networkidle` 的適用時機與限制](#理解-networkidle-的適用時機與限制)
     - [🍀 0607 - GraphQL testing](#-0607---graphql-testing)
+      - [用 `operationName` 區分 GraphQL 操作](#用-operationname-區分-graphql-操作)
     - [🍀 0608 - WebSocket](#-0608---websocket)
+      - [觀察即時事件與驗證 UI 回應](#觀察即時事件與驗證-ui-回應)
 - [💫Chapter 7 — Authentication 與 Session](#chapter-7--authentication-與-session)
   - [🧩學習目標](#學習目標-7)
   - [🧩章節內容](#章節內容-7)
@@ -664,40 +672,72 @@ Context ≈ 無痕視窗
 &nbsp;
 ### 🍀 0601 - waitForResponse
 
+#### 等待指定 API 回應完成
+
+適合搭配點擊、送出表單、切換篩選條件等操作，精準等待特定 API 回來，而不是盲目使用固定秒數。
+
 ---
 
 &nbsp;
 ### 🍀 0602 - route interception
+
+#### 攔截、放行、阻擋與改寫 request
+
+理解 `route` 如何在 request 發送前介入，並區分 `continue`、`abort`、`fulfill` 三種常見用途。
 
 ---
 
 &nbsp;
 ### 🍀 0603 - mock API
 
+#### 建立可重現的前端測試情境
+
+用固定回應重現空資料、錯誤狀態、特殊邊界資料，降低測試對真後端與 seed data 的依賴。
+
 ---
 
 &nbsp;
 ### 🍀 0604 - modify response
+
+#### 保留真後端流程，只局部改寫回應
+
+先取得真實 response，再針對局部欄位做 patch，適合測試 feature flag、折扣、權限與缺貨狀態。
 
 ---
 
 &nbsp;
 ### 🍀 0605 - fake backend
 
+#### 用有狀態的假後端支撐前端流程
+
+不只 mock 單一回應，而是用記憶體資料模擬 list / detail / create / delete 等完整互動流程。
+
 ---
 
 &nbsp;
 ### 🍀 0606 - network idle
+
+#### 理解 `networkidle` 的適用時機與限制
+
+知道它不是萬用等待條件，特別是在 SPA、輪詢、analytics、WebSocket 場景中要避免濫用。
 
 ---
 
 &nbsp;
 ### 🍀 0607 - GraphQL testing
 
+#### 用 `operationName` 區分 GraphQL 操作
+
+因為多數 GraphQL 請求共用同一支 endpoint，所以等待與 mock 時要讀 request body，而不只看 URL。
+
 ---
 
 &nbsp;
 ### 🍀 0608 - WebSocket
+
+#### 觀察即時事件與驗證 UI 回應
+
+掌握如何監聽 socket 建立、frame 收發與關閉事件，並把重點放在使用者真正看得到的即時 UI 結果。
 
 ---
 
