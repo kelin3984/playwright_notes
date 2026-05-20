@@ -20,7 +20,12 @@
     - [最小基礎案例](#最小基礎案例)
     - [waitForResponse 的核心觀念](#waitforresponse-的核心觀念)
     - [waitForResponse 常用 API](#waitforresponse-常用-api)
-    - [waitForResponse 實戰範例：登入後等待使用者資料](#waitforresponse-實戰範例登入後等待使用者資料)
+    - [waitForResponse 完整範例一：登入流程](#waitforresponse-完整範例一登入流程)
+      - [版本 A：只驗證登入 API response](#版本-a只驗證登入-api-response)
+      - [版本 B：完整走完登入流程](#版本-b完整走完登入流程)
+    - [waitForResponse 完整範例二：搜尋結果與分頁切換](#waitforresponse-完整範例二搜尋結果與分頁切換)
+      - [版本 A：只驗證搜尋 API response](#版本-a只驗證搜尋-api-response)
+      - [版本 B：完整走完搜尋與分頁流程](#版本-b完整走完搜尋與分頁流程)
     - [waitForResponse 最佳實踐](#waitforresponse-最佳實踐)
     - [waitForResponse 常見錯誤](#waitforresponse-常見錯誤)
   - [🍀 0602 - route interception](#-0602---route-interception)
@@ -234,18 +239,80 @@ const data = await response.json()
 expect(data.name).toBe('Alice')
 ```
 
-### waitForResponse 實戰範例：登入後等待使用者資料
+### waitForResponse 完整範例一：登入流程
+
+同一個登入情境，這裡刻意拆成兩個版本：
+
+- **版本 A：只驗證 API response**
+- **版本 B：完整走完登入流程**
+
+這樣你可以先學會 `waitForResponse()` 怎麼抓到正確 response，再往下學怎麼把 API 驗證接到完整 UI 流程。
+
+#### 版本 A：只驗證登入 API response
+
+這個版本的目標很單純：
+
+1. 輸入帳密
+2. 點登入
+3. 成功等到 `/api/login`
+4. 驗證 response status 與回傳資料
+
+這個版本**不驗證 dashboard UI**，只專注在「有沒有正確等到登入 API」。
 
 ```typescript
 import { test, expect } from '@playwright/test'
 
-test('登入成功後顯示使用者名稱', async ({ page }) => {
+test('登入：只驗證 login API response', async ({ page }) => {
   await page.goto('https://example.com/login')
 
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Password').fill('P@ssw0rd123')
 
-  const [profileResponse] = await Promise.all([
+  const [loginResponse] = await Promise.all([
+    page.waitForResponse((response) => {
+      return (
+        response.url().includes('/api/login') &&
+        response.request().method() === 'POST' &&
+        response.status() === 200
+      )
+    }),
+    page.getByRole('button', { name: '登入' }).click(),
+  ])
+
+  const loginData = await loginResponse.json()
+
+  expect(loginData.success).toBe(true)
+  expect(loginData.userId).toBe('user-1001')
+  expect(loginData.accessToken).toBeTruthy()
+})
+```
+
+#### 版本 B：完整走完登入流程
+
+這個版本不只驗 API，還會把整個登入流程走完：
+
+1. 等 `/api/login`
+2. 等登入後自動載入的 `/api/me`
+3. 驗證使用者資料
+4. 驗證 URL 與 dashboard UI
+
+```typescript
+import { test, expect } from '@playwright/test'
+
+test('登入：完整走完登入流程', async ({ page }) => {
+  await page.goto('https://example.com/login')
+
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Password').fill('P@ssw0rd123')
+
+  const [loginResponse, profileResponse] = await Promise.all([
+    page.waitForResponse((response) => {
+      return (
+        response.url().includes('/api/login') &&
+        response.request().method() === 'POST' &&
+        response.status() === 200
+      )
+    }),
     page.waitForResponse((response) => {
       return (
         response.url().includes('/api/me') &&
@@ -256,11 +323,152 @@ test('登入成功後顯示使用者名稱', async ({ page }) => {
     page.getByRole('button', { name: '登入' }).click(),
   ])
 
-  const profile = await profileResponse.json()
-  expect(profile.email).toBe('alice@example.com')
+  const loginData = await loginResponse.json()
+  const profileData = await profileResponse.json()
 
-  await expect(page.getByRole('banner')).toContainText('Alice Chen')
+  expect(loginData.success).toBe(true)
+  expect(loginData.accessToken).toBeTruthy()
+
+  expect(profileData.email).toBe('alice@example.com')
+  expect(profileData.name).toBe('Alice Chen')
+
   await expect(page).toHaveURL(/dashboard/)
+  await expect(page.getByRole('heading', { name: '控制台' })).toBeVisible()
+  await expect(page.getByRole('banner')).toContainText('Alice Chen')
+})
+```
+
+### waitForResponse 完整範例二：搜尋結果與分頁切換
+
+這個情境比登入更接近日常前端頁面，因為它同時包含：
+
+- 輸入關鍵字
+- 等搜尋 API
+- 驗證搜尋結果
+- 切到下一頁
+- 再等一次分頁 API
+
+同樣拆成兩個版本。
+
+#### 版本 A：只驗證搜尋 API response
+
+這個版本聚焦在「我有沒有抓到正確的搜尋 API」，以及「換頁時有沒有抓到 page=2 的 API」。
+
+```typescript
+import { test, expect } from '@playwright/test'
+
+test('搜尋：只驗證搜尋 API response 與第二頁 response', async ({ page }) => {
+  await page.goto('https://example.com/products')
+
+  await page.getByPlaceholder('搜尋商品').fill('keyboard')
+
+  const [page1Response] = await Promise.all([
+    page.waitForResponse((response) => {
+      const url = new URL(response.url())
+
+      return (
+        url.pathname.includes('/api/products/search') &&
+        url.searchParams.get('keyword') === 'keyboard' &&
+        url.searchParams.get('page') === '1' &&
+        response.request().method() === 'GET' &&
+        response.status() === 200
+      )
+    }),
+    page.getByRole('button', { name: '搜尋' }).click(),
+  ])
+
+  const page1Data = await page1Response.json()
+
+  expect(page1Data.items.length).toBeGreaterThan(0)
+  expect(page1Data.pagination.page).toBe(1)
+  expect(page1Data.pagination.totalPages).toBeGreaterThan(1)
+
+  const [page2Response] = await Promise.all([
+    page.waitForResponse((response) => {
+      const url = new URL(response.url())
+
+      return (
+        url.pathname.includes('/api/products/search') &&
+        url.searchParams.get('keyword') === 'keyboard' &&
+        url.searchParams.get('page') === '2' &&
+        response.request().method() === 'GET' &&
+        response.status() === 200
+      )
+    }),
+    page.getByRole('button', { name: '下一頁' }).click(),
+  ])
+
+  const page2Data = await page2Response.json()
+
+  expect(page2Data.pagination.page).toBe(2)
+  expect(page2Data.items.length).toBeGreaterThan(0)
+})
+```
+
+#### 版本 B：完整走完搜尋與分頁流程
+
+這個版本除了等 API，還會驗證：
+
+- 第 1 頁結果是否出現
+- 目前頁碼是否正確
+- 切到第 2 頁後，結果是否更新
+- 分頁狀態是否同步改變
+
+```typescript
+import { test, expect } from '@playwright/test'
+
+test('搜尋：完整走完搜尋與分頁流程', async ({ page }) => {
+  await page.goto('https://example.com/products')
+
+  await page.getByPlaceholder('搜尋商品').fill('keyboard')
+
+  const [page1Response] = await Promise.all([
+    page.waitForResponse((response) => {
+      const url = new URL(response.url())
+
+      return (
+        url.pathname.includes('/api/products/search') &&
+        url.searchParams.get('keyword') === 'keyboard' &&
+        url.searchParams.get('page') === '1' &&
+        response.request().method() === 'GET' &&
+        response.status() === 200
+      )
+    }),
+    page.getByRole('button', { name: '搜尋' }).click(),
+  ])
+
+  const page1Data = await page1Response.json()
+
+  expect(page1Data.pagination.page).toBe(1)
+  expect(page1Data.items.length).toBeGreaterThan(0)
+
+  await expect(page.getByRole('heading', { name: /keyboard/i })).toBeVisible()
+  await expect(page.getByRole('list', { name: '搜尋結果' })).toContainText('Keyboard')
+  await expect(page.getByRole('button', { name: '第 1 頁' })).toHaveAttribute('aria-current', 'page')
+
+  const [page2Response] = await Promise.all([
+    page.waitForResponse((response) => {
+      const url = new URL(response.url())
+
+      return (
+        url.pathname.includes('/api/products/search') &&
+        url.searchParams.get('keyword') === 'keyboard' &&
+        url.searchParams.get('page') === '2' &&
+        response.request().method() === 'GET' &&
+        response.status() === 200
+      )
+    }),
+    page.getByRole('button', { name: '下一頁' }).click(),
+  ])
+
+  const page2Data = await page2Response.json()
+
+  expect(page2Data.pagination.page).toBe(2)
+  expect(page2Data.items.length).toBeGreaterThan(0)
+
+  await expect(page.getByRole('button', { name: '第 2 頁' })).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByRole('list', { name: '搜尋結果' })).toContainText('Keyboard')
+  await expect(page.getByRole('status')).toContainText('第 2 頁')
 })
 ```
 
