@@ -809,10 +809,29 @@ guest
 
 ### 🍀 0801 - 測試分層
 
+理解如何區分：
+
+```txt
+UI / E2E
+API
+Auth / Session
+共用支援層（pages / fixtures / data / helpers）
+```
+
 ---
 
 &nbsp;
 ### 🍀 0802 - reusable design
+
+包含常見資料夾切法：
+
+```txt
+tests/ 依功能切
+pages/ 放頁面抽象
+fixtures/ 放測試注入
+data/ 放測試資料
+helpers/ 放共用工具
+```
 
 ---
 
@@ -1111,15 +1130,21 @@ npx playwright test --shard=2/4
 &nbsp;
 ### 🍀 1503 - critical flow
 
+保留最重要、最不能壞的核心使用者流程。
+
 ---
 
 &nbsp;
 ### 🍀 1504 - smoke test
 
+快速確認主流程可用，通常適合用少量高價值案例覆蓋。
+
 ---
 
 &nbsp;
 ### 🍀 1505 - regression test
+
+用來防止既有功能回歸；實務上通常以標記、測試清單或 CI pipeline 管理，不一定另外切資料夾。
 
 ---
 

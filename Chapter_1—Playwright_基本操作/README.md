@@ -29,6 +29,9 @@
   - [🍀 0106 - 專案結構](#-0106---專案結構)
     - [標準目錄結構](#標準目錄結構)
     - [各目錄 / 檔案說明](#各目錄--檔案說明)
+    - [常見測試類型怎麼分](#常見測試類型怎麼分)
+    - [推薦資料夾規劃](#推薦資料夾規劃)
+    - [切檔原則](#切檔原則)
   - [🍀 0107 - playwright.config.ts 深度設定](#-0107---playwrightconfigts-深度設定)
     - [完整範例](#完整範例)
     - [五大重點設定說明](#五大重點設定說明)
@@ -295,6 +298,120 @@ my-project/
 | `test-results/` | 失敗截圖、trace 檔案，**加入 `.gitignore`** |
 | `playwright-report/` | HTML 報告，**加入 `.gitignore`** |
 | `playwright.config.ts` | 全域設定：瀏覽器、timeout、baseURL、報告格式等 |
+
+### 常見測試類型怎麼分
+
+實務上通常不是把所有測試都丟進同一層 `tests/`，而是先分清楚「這個測試在驗證什麼」。
+
+| 類型 | 主要驗證內容 | 建議放哪裡 | 適合用 Playwright 嗎？ |
+|------|-------------|-----------|----------------------|
+| UI / E2E 測試 | 使用者從畫面操作到結果驗證的完整流程 | `tests/ui/`、`tests/e2e/` | ✅ 最適合 |
+| API 測試 | API request / response、狀態碼、資料結構 | `tests/api/` | ✅ 適合 |
+| Auth / Session 測試 | login、logout、權限、`storageState`、多角色 | `tests/auth/` | ✅ 很常見 |
+| 關鍵業務流程測試 | 下單、付款、簽核、結帳等跨頁流程 | `tests/ui/checkout/`、`tests/e2e/order/` | ✅ 適合，但只測關鍵路徑 |
+| 純商業邏輯 / utility 測試 | 折扣公式、資料轉換、函式邏輯 | 應放在應用程式自己的 unit / integration test | ❌ 通常不該優先用 Playwright |
+
+> **重點**：Playwright 最擅長的是「跨頁面、跨請求、跨 session 的真實流程驗證」，不是拿來大量測試純 function。
+
+另外像 `smoke test`、`regression test`、`critical flow` 這些分類，通常比較像**執行策略**，不一定要切成獨立資料夾；很多團隊會用測試標籤、檔名規則或 CI pipeline 來管理。
+
+### 推薦資料夾規劃
+
+如果專案規模開始變大，建議採用：
+
+1. **測試案例依功能 / 領域切分**
+2. **共用支援層依技術責任切分**
+
+```txt
+my-project/
+├── tests/
+│   ├── ui/
+│   │   ├── auth/
+│   │   │   └── login.spec.ts
+│   │   ├── cart/
+│   │   │   └── add-to-cart.spec.ts
+│   │   └── checkout/
+│   │       └── checkout.spec.ts
+│   ├── api/
+│   │   ├── users.api.spec.ts
+│   │   └── orders.api.spec.ts
+│   ├── auth/
+│   │   ├── session.spec.ts
+│   │   └── role-permission.spec.ts
+│   └── fixtures/
+│       └── upload/
+│           └── avatar.png
+├── pages/
+│   ├── LoginPage.ts
+│   └── CheckoutPage.ts
+├── fixtures/
+│   └── test.ts
+├── data/
+│   ├── users/
+│   │   └── admin.json
+│   └── orders/
+│       └── order-seed.json
+├── helpers/
+│   ├── api-client.ts
+│   └── date.ts
+├── .auth/
+│   └── admin.json
+└── playwright.config.ts
+```
+
+### 切檔原則
+
+**① `tests/` 優先依功能切，不要只依技術動作切。**
+
+建議這樣切：
+
+- `tests/ui/cart/add-to-cart.spec.ts`
+- `tests/ui/checkout/apply-coupon.spec.ts`
+- `tests/auth/role-permission.spec.ts`
+
+不建議這樣切：
+
+- `tests/click.spec.ts`
+- `tests/input.spec.ts`
+- `tests/assertion.spec.ts`
+
+因為使用者不會經歷「click 流程」或「fill 流程」，他們經歷的是「登入流程」、「下單流程」、「結帳流程」。
+
+**② `pages/` 放頁面與元件抽象，不放 assertion 大雜燴。**
+
+- `pages/LoginPage.ts`：封裝登入頁操作
+- `pages/components/Navbar.ts`：封裝可重複元件
+
+如果某些共用邏輯不是頁面本身，而是 API 建資料、日期格式、等待工具，應放去 `helpers/` 或 `data/`，不要全部堆進 POM。
+
+**③ `fixtures/` 這個名稱要分清楚兩種用途。**
+
+| 路徑 | 用途 |
+|------|------|
+| `fixtures/` | 自定義 Playwright `fixtures`，例如擴充 `test`、統一登入狀態、共用 setup |
+| `tests/fixtures/` | 測試資源檔，例如上傳檔案、假圖片、範例 PDF |
+
+這兩者名稱相同，但責任完全不同。前者是**測試執行注入層**，後者是**測試資料 / 檔案資源層**。
+
+**④ `data/` 放可重複使用的測試資料，不要把 JSON 亂塞進 spec 檔。**
+
+像是：
+
+- 測試帳號
+- 訂單 seed data
+- API mock payload
+
+當資料與測試邏輯分離後，測試會更容易維護，也更容易針對不同環境切換。
+
+**⑤ smoke / regression / critical flow 比較適合用標記管理。**
+
+例如：
+
+- 以檔名標示：`checkout.smoke.spec.ts`
+- 以 `test.describe()` 或 tag 管理
+- 交給 CI 決定哪些測試在 PR、nightly、release 前執行
+
+> **實務建議**：先把資料夾切成「功能領域 + 支援層」，再用標記與 pipeline 管理 `smoke` / `regression` / `critical flow`，通常比再開一層資料夾更穩定。
 
 ---
 
