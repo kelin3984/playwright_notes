@@ -111,14 +111,14 @@
 - [💫Chapter 8 — 測試架構設計](#chapter-8--測試架構設計)
   - [🧩學習目標](#學習目標-8)
   - [🧩章節內容](#章節內容-8)
-    - [🍀 0801 - 測試分層](#-0801---測試分層)
-    - [🍀 0802 - reusable design](#-0802---reusable-design)
-    - [🍀 0803 - fixtures](#-0803---fixtures)
-    - [🍀 0804 - hooks](#-0804---hooks)
-    - [🍀 0805 - test isolation](#-0805---test-isolation)
-    - [🍀 0806 - test lifecycle](#-0806---test-lifecycle)
+    - [🍀 0801 - 測試分層與責任邊界](#-0801---測試分層與責任邊界)
+    - [🍀 0802 - 專案結構與模組切分](#-0802---專案結構與模組切分)
+    - [🍀 0803 - test isolation](#-0803---test-isolation)
+    - [🍀 0804 - test lifecycle](#-0804---test-lifecycle)
+    - [🍀 0805 - fixtures](#-0805---fixtures)
+    - [🍀 0806 - hooks](#-0806---hooks)
     - [🍀 0807 - parallel testing](#-0807---parallel-testing)
-    - [🍀 0808 - flaky test](#-0808---flaky-test)
+    - [🍀 0808 - flaky test prevention](#-0808---flaky-test-prevention)
 - [💫Chapter 9 — 測試資料管理](#chapter-9--測試資料管理)
   - [🧩學習目標](#學習目標-9)
   - [🧩章節內容](#章節內容-9)
@@ -802,12 +802,39 @@ guest
 
 ## 🧩學習目標
 
-建立可維護的大型測試架構。
+建立可維護、可平行擴張、可除錯的大型測試架構，並先釐清與 data、POM、debug、CI 的責任邊界。
 
 &nbsp;
 ## 🧩章節內容
 
-### 🍀 0801 - 測試分層
+本章聚焦在「如何把 Playwright 測試專案設計得可維護」。
+
+不重講：
+
+```txt
+Chapter 1：初始化、基本專案結構、config 入門
+Chapter 9：測試資料管理細節
+Chapter 10：POM / component object 實作風格
+Chapter 11：debug / trace / screenshot / video 工具
+Chapter 14：CI/CD pipeline 與 artifact/report 上傳
+```
+
+本章要處理的是：
+
+```txt
+責任如何分層
+資料夾如何切分
+測試如何隔離
+生命週期如何安排
+fixture 與 hook 如何分工
+平行執行時如何避免互相污染
+怎麼從架構面降低 flaky test
+```
+
+---
+
+&nbsp;
+### 🍀 0801 - 測試分層與責任邊界
 
 理解如何區分：
 
@@ -818,50 +845,134 @@ Auth / Session
 共用支援層（pages / fixtures / data / helpers）
 ```
 
+重點不是只會背資料夾名稱，而是知道：
+
+```txt
+spec 負責描述案例與驗證結果
+fixture 負責注入依賴與生命週期
+page / component 負責封裝頁面操作
+data 負責測試資料來源與 builder
+helper 負責與頁面無關的純工具
+```
+
+這一節會直接銜接 Chapter 10 的 POM 邊界，也會先替 Chapter 9 的 data layer 留位置。
+
 ---
 
 &nbsp;
-### 🍀 0802 - reusable design
+### 🍀 0802 - 專案結構與模組切分
 
 包含常見資料夾切法：
 
 ```txt
-tests/ 依功能切
-pages/ 放頁面抽象
-fixtures/ 放測試注入
-data/ 放測試資料
-helpers/ 放共用工具
+tests/：依功能、頁面或 domain 分組
+pages/：放 page object / component object
+fixtures/：放自訂 fixture 與依賴注入
+data/：放 seed、builder、mock data 定義
+helpers/：放與頁面無關的共用工具
+auth/ 或 states/：放登入狀態與角色設定
+api/：放 API client 或測試支援層
 ```
 
----
-
-&nbsp;
-### 🍀 0803 - fixtures
+重點不是目錄長相一致，而是模組邊界清楚，避免 selector、登入流程、測試資料到處散落。
 
 ---
 
 &nbsp;
-### 🍀 0804 - hooks
+### 🍀 0803 - test isolation
+
+理解：
+
+```txt
+每個 test 都應可獨立執行
+不依賴執行順序
+不共享可變狀態
+不殘留 route、storage、假資料狀態
+```
+
+這一節會連到 Chapter 6 的 network mock / fake backend，以及 Chapter 7 的 auth/session 實務。
 
 ---
 
 &nbsp;
-### 🍀 0805 - test isolation
+### 🍀 0804 - test lifecycle
+
+先理解整體生命週期，再理解 fixture 與 hook 應該掛在哪一層：
+
+```txt
+global setup
+worker setup
+beforeAll / beforeEach
+test body
+afterEach / afterAll
+teardown
+```
+
+重點是知道不同準備工作應該放在哪個階段，而不是把所有初始化都塞進 `beforeEach`。
 
 ---
 
 &nbsp;
-### 🍀 0806 - test lifecycle
+### 🍀 0805 - fixtures
+
+理解 fixture 是 Playwright Test 架構中的依賴注入機制：
+
+```txt
+test-scoped fixture：每個測試獨立建立
+worker-scoped fixture：同一 worker 內共享
+fixture 可以包 setup / teardown / reusable dependency
+```
+
+這一節聚焦在責任與作用域，細節會和 Chapter 7、9、10 互相呼應。
+
+---
+
+&nbsp;
+### 🍀 0806 - hooks
+
+理解 hooks 是輔助測試編排的機制，不應取代 fixture：
+
+```txt
+beforeEach：適合輕量前置條件
+afterEach：適合清理與觀測輸出
+beforeAll / afterAll：適合昂貴且可共享的準備
+```
+
+也要知道何時不該用 hooks 隱藏業務流程，避免可讀性與除錯性下降。
 
 ---
 
 &nbsp;
 ### 🍀 0807 - parallel testing
 
+平行執行不是只開 `workers` 就結束，還要處理：
+
+```txt
+共享帳號衝突
+測試資料競爭
+環境污染
+順序依賴
+worker 間資源隔離
+```
+
+本節聚焦在架構與資料隔離原則；CI 分片、artifact、report upload 留給 Chapter 14。
+
 ---
 
 &nbsp;
-### 🍀 0808 - flaky test
+### 🍀 0808 - flaky test prevention
+
+重點放在「如何從架構面預防 flaky」，例如：
+
+```txt
+選對等待策略
+避免共享狀態
+集中 selector 與頁面操作
+讓資料準備方式可重現
+降低測試對外部環境的隨機依賴
+```
+
+debug / trace / screenshot / video 等觀測工具，會在 Chapter 11 再深入。
 
 ---
 
