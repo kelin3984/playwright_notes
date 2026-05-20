@@ -7,6 +7,9 @@
 ```bash
 /roadmap-note-generator 💫Chapter 2 — Locator 與 DOM 操作 Chapter_2—Locator_與_DOM_操作/README.md
 
+# 指令
+/roadmap-note-generator xxx xxx/README.md
+
 # 說明
 /roadmap-note-generator <章節名稱> <輸出 README 路徑>
 第一個參數為 **章節名稱**（需與 roadmap 中的標題完全一致）。
