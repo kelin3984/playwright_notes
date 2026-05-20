@@ -132,10 +132,10 @@
   - [🧩學習目標](#學習目標-10)
   - [🧩章節內容](#章節內容-10)
     - [🍀 1001 - POM 概念](#-1001---pom-概念)
-    - [🍀 1002 - page abstraction](#-1002---page-abstraction)
+    - [🍀 1002 - page abstraction with class and functional](#-1002---page-abstraction-with-class-and-functional)
     - [🍀 1003 - reusable methods](#-1003---reusable-methods)
     - [🍀 1004 - component object](#-1004---component-object)
-    - [🍀 1005 - anti-pattern](#-1005---anti-pattern)
+    - [🍀 1005 - boundaries and anti-pattern](#-1005---boundaries-and-anti-pattern)
 - [💫Chapter 11 — Debug 與 Trace](#chapter-11--debug-與-trace)
   - [🧩學習目標](#學習目標-11)
   - [🧩章節內容](#章節內容-11)
@@ -910,32 +910,120 @@ helpers/ 放共用工具
 
 ## 🧩學習目標
 
-建立可重用的測試 abstraction。
+建立可維護、可重組的頁面抽象，並理解 POM 不等於 class-only。
 
 &nbsp;
 ## 🧩章節內容
 
 ### 🍀 1001 - POM 概念
 
+理解：
+
+```txt
+POM = 用頁面或元件物件封裝 locator 與操作流程
+目的不是炫技抽象，而是降低 selector 外洩、提升維護性
+POM != 只能用 class
+POM != 把所有測試邏輯都塞進 page file
+```
+
+重點先建立心智模型：
+
+- spec 負責描述案例與驗證結果
+- POM 負責提供頁面操作 API
+- locator 集中管理，避免測試檔四處散落 selector
+
 ---
 
 &nbsp;
-### 🍀 1002 - page abstraction
+### 🍀 1002 - page abstraction with class and functional
+
+同一個 POM 模式，可以有兩種常見表達方式：
+
+```txt
+class style
+- 適合大型專案、官方文件風格、搭配 fixture 注入時較直觀
+
+functional style
+- 適合現代前端常見寫法
+- 用 factory function 回傳 page API
+```
+
+本章不把 POM 綁死在語法，而是比較兩者共同原則：
+
+- 都要綁定 `page`
+- 都要封裝 locators
+- 都要暴露有語意的 domain actions
+- 都要避免直接把 low-level click/fill 散在 spec
 
 ---
 
 &nbsp;
 ### 🍀 1003 - reusable methods
 
+學會設計真正可重用的方法，而不是把每一步都包成薄 wrapper。
+
+```txt
+login(email, password)
+addItemToCart(productName)
+submitSearch(keyword)
+```
+
+重點：
+
+- 方法名稱要貼近使用者意圖，不要只剩 `clickX()`、`fillY()`
+- 只封裝穩定且重複出現的操作
+- 可接受少量頁面 readiness 檢查，但不要把所有 business assertion 都塞進 POM
+- class 與 functional 都應遵守相同設計原則
+
 ---
 
 &nbsp;
 ### 🍀 1004 - component object
 
+當頁面中有可重複使用的區塊時，應抽成 component object，而不是把所有東西都留在單一 page object。
+
+例如：
+
+```txt
+Header
+Sidebar
+Modal
+ProductCard
+DatePicker
+```
+
+理解：
+
+```txt
+Page Object = 整頁流程
+Component Object = 可重用區塊
+組合（composition）比無限制繼承更常見也更穩定
+```
+
 ---
 
 &nbsp;
-### 🍀 1005 - anti-pattern
+### 🍀 1005 - boundaries and anti-pattern
+
+本節要明確建立 POM 與其他層的邊界：
+
+```txt
+POM：封裝頁面結構與操作
+fixture：負責注入依賴與測試生命週期
+helper：放純工具函式
+data：放 seed、faker、測試資料 builder
+spec：描述案例、驗證結果、組合流程
+```
+
+常見反模式：
+
+- God object：一個 page file 管全站所有功能
+- selector 泄漏：spec 直接寫一堆 locator，POM 變半套
+- assertion 雜燴：把大量業務驗證塞進 POM
+- abstraction 過度：每個 click 都包一層，卻沒有提升可讀性
+- 把 functional POM 誤寫成一般 helper，失去頁面邊界
+
+也要知道：當抽象層變厚之後，debug、trace、step 設計會更重要，這會直接銜接下一章。
 
 ---
 
