@@ -8,58 +8,82 @@
 
 - [💫 Chapter 6 — Network 與 API 控制](#-chapter-6--network-與-api-控制)
   - [目錄](#目錄)
+  - [這章在解決什麼問題](#這章在解決什麼問題)
+  - [先備知識](#先備知識)
+    - [進這章前，先有這三個基本觀念](#進這章前先有這三個基本觀念)
+  - [學習地圖](#學習地圖)
+    - [建議閱讀順序](#建議閱讀順序)
+    - [難度分層](#難度分層)
+  - [什麼情境該用哪一招](#什麼情境該用哪一招)
   - [🍀 0601 - waitForResponse](#-0601---waitforresponse)
+    - [什麼時候會用到](#什麼時候會用到)
+    - [最小基礎案例](#最小基礎案例)
     - [waitForResponse 的核心觀念](#waitforresponse-的核心觀念)
     - [waitForResponse 常用 API](#waitforresponse-常用-api)
     - [waitForResponse 實戰範例：登入後等待使用者資料](#waitforresponse-實戰範例登入後等待使用者資料)
     - [waitForResponse 最佳實踐](#waitforresponse-最佳實踐)
     - [waitForResponse 常見錯誤](#waitforresponse-常見錯誤)
   - [🍀 0602 - route interception](#-0602---route-interception)
+    - [什麼時候會用到](#什麼時候會用到-1)
+    - [最小基礎案例](#最小基礎案例-1)
     - [route interception 的核心觀念](#route-interception-的核心觀念)
     - [route interception 常用 API](#route-interception-常用-api)
     - [route interception 實戰範例：阻擋第三方追蹤腳本](#route-interception-實戰範例阻擋第三方追蹤腳本)
     - [route interception 最佳實踐](#route-interception-最佳實踐)
     - [route interception 常見錯誤](#route-interception-常見錯誤)
   - [🍀 0603 - mock API](#-0603---mock-api)
+    - [什麼時候會用到](#什麼時候會用到-2)
+    - [最小基礎案例](#最小基礎案例-2)
     - [mock API 的核心觀念](#mock-api-的核心觀念)
     - [mock API 常用 API](#mock-api-常用-api)
     - [mock API 實戰範例：商品列表空狀態](#mock-api-實戰範例商品列表空狀態)
     - [mock API 最佳實踐](#mock-api-最佳實踐)
     - [mock API 常見錯誤](#mock-api-常見錯誤)
   - [🍀 0604 - modify response](#-0604---modify-response)
+    - [什麼時候會用到](#什麼時候會用到-3)
+    - [最小基礎案例](#最小基礎案例-3)
     - [modify response 的核心觀念](#modify-response-的核心觀念)
     - [modify response 常用 API](#modify-response-常用-api)
     - [modify response 實戰範例：在不改後端的情況下注入促銷資料](#modify-response-實戰範例在不改後端的情況下注入促銷資料)
     - [modify response 最佳實踐](#modify-response-最佳實踐)
     - [modify response 常見錯誤](#modify-response-常見錯誤)
   - [🍀 0605 - fake backend](#-0605---fake-backend)
+    - [什麼時候會用到](#什麼時候會用到-4)
+    - [最小基礎案例](#最小基礎案例-4)
     - [fake backend 的核心觀念](#fake-backend-的核心觀念)
     - [fake backend 常用 API](#fake-backend-常用-api)
     - [fake backend 實戰範例：購物車 CRUD 流程](#fake-backend-實戰範例購物車-crud-流程)
     - [fake backend 最佳實踐](#fake-backend-最佳實踐)
     - [fake backend 常見錯誤](#fake-backend-常見錯誤)
   - [🍀 0606 - network idle](#-0606---network-idle)
+    - [什麼時候會用到](#什麼時候會用到-5)
+    - [最小基礎案例](#最小基礎案例-5)
     - [network idle 的核心觀念](#network-idle-的核心觀念)
     - [network idle 常用 API](#network-idle-常用-api)
     - [network idle 實戰範例：搜尋結果頁面穩定等待](#network-idle-實戰範例搜尋結果頁面穩定等待)
     - [network idle 最佳實踐](#network-idle-最佳實踐)
     - [network idle 常見錯誤](#network-idle-常見錯誤)
   - [🍀 0607 - GraphQL testing](#-0607---graphql-testing)
+    - [什麼時候會用到](#什麼時候會用到-6)
+    - [最小基礎案例](#最小基礎案例-6)
     - [GraphQL testing 的核心觀念](#graphql-testing-的核心觀念)
     - [GraphQL testing 常用 API](#graphql-testing-常用-api)
     - [GraphQL testing 實戰範例：攔截產品查詢與 mutation](#graphql-testing-實戰範例攔截產品查詢與-mutation)
     - [GraphQL testing 最佳實踐](#graphql-testing-最佳實踐)
     - [GraphQL testing 常見錯誤](#graphql-testing-常見錯誤)
   - [🍀 0608 - WebSocket](#-0608---websocket)
+    - [什麼時候會用到](#什麼時候會用到-7)
+    - [最小基礎案例](#最小基礎案例-7)
     - [WebSocket 的核心觀念](#websocket-的核心觀念)
     - [WebSocket 常用 API](#websocket-常用-api)
     - [WebSocket 實戰範例：客服聊天室即時訊息](#websocket-實戰範例客服聊天室即時訊息)
     - [WebSocket 最佳實踐](#websocket-最佳實踐)
     - [WebSocket 常見錯誤](#websocket-常見錯誤)
   - [⚡更多細節](#更多細節)
-    - [🍀 0602.01 - route matching 與清理策略](#-060201---route-matching-與-清理策略)
+    - [這一區適合什麼時候讀](#這一區適合什麼時候讀)
+    - [🍀 0602.01 - route matching 與清理策略](#-060201---route-matching-與清理策略)
       - [為什麼攔截規則常讓測試互相污染](#為什麼攔截規則常讓測試互相污染)
-    - [🍀 0604.01 - modify response 的一致性檢查](#-060401---modify-response-的-一致性檢查)
+    - [🍀 0604.01 - modify response 的一致性檢查](#-060401---modify-response-的一致性檢查)
       - [哪些欄位改了最容易讓前端進入假成功狀態](#哪些欄位改了最容易讓前端進入假成功狀態)
     - [🍀 0605.01 - stateful fake backend 的設計方式](#-060501---stateful-fake-backend-的設計方式)
       - [如何讓 fake backend 既逼真又可重置](#如何讓-fake-backend-既逼真又可重置)
@@ -74,9 +98,113 @@
 
 &nbsp;
 
+## 這章在解決什麼問題
+
+很多人第一次看到 Playwright 的 network 相關 API，會覺得像是在學另一套工具。但其實這章真正要解的問題很單純：
+
+| 你遇到的狀況 | 這章會教你什麼 |
+|--------------|------------------|
+| 點了按鈕後，不知道該等哪個 API | 用 `waitForResponse()` 精準等待 |
+| 想阻擋第三方服務或攔截特定 request | 用 `route` 做攔截與放行 |
+| 想固定測某種畫面狀態，不想依賴真後端 | 用 `mock API` 建立可重現情境 |
+| 想保留真資料，只改某幾個欄位 | 用 `modify response` 局部 patch |
+| 前端還沒接好真後端，但想先跑流程 | 用 `fake backend` 暫時模擬後端 |
+| 不確定 `networkidle` 到底能不能用 | 理解它的限制與替代方案 |
+
+如果你現在還分不清楚這些 API 的差異，很正常。這章最重要的，不是一次記住全部 API，而是先建立「**我現在要等什麼、攔什麼、改什麼**」的心智模型。
+
+&nbsp;
+
+## 先備知識
+
+你不需要先是後端工程師才能學這章，但建議先有以下基本概念，讀起來會順很多。
+
+### 進這章前，先有這三個基本觀念
+
+| 基本觀念 | 你至少要知道什麼 |
+|----------|--------------------|
+| HTTP request / response | 知道瀏覽器會送 request，伺服器會回 response |
+| 非同步等待 | 知道前端很多畫面更新不是立即完成，而是要等 API 回來 |
+| Playwright 基礎操作 | 已經會 `goto()`、`click()`、`fill()`、`expect()` |
+
+如果你已經學過 Locator、Assertion、表單互動，那其實就可以進這章了。真正的新東西只有一個：**把畫面背後的網路流也納入測試思考。**
+
+&nbsp;
+
+## 學習地圖
+
+這章不建議從頭到尾平均閱讀。更好的方式是先把最常用的三招學會，再回來看進階主題。
+
+### 建議閱讀順序
+
+```txt
+先讀：0601 waitForResponse
+→ 再讀：0602 route interception
+→ 再讀：0603 mock API
+→ 熟悉後再進：0604 modify response、0605 fake backend
+→ 最後再看：0606 network idle、0607 GraphQL testing、0608 WebSocket
+```
+
+### 難度分層
+
+| 層級 | 主題 | 你會學到什麼 |
+|------|------|----------------|
+| 基礎必讀 | `0601`、`0602`、`0603` | 等 API、攔 request、做最基本 mock |
+| 中階延伸 | `0604`、`0605` | 局部改寫真回應、用假後端撐流程 |
+| 進階專題 | `0606`、`0607`、`0608` | 等待策略判斷、GraphQL、即時連線觀測 |
+
+你可以把這章想成三層樓：第一層先會用，第二層開始會設計測試情境，第三層才是比較專門的 network 題目。
+
+&nbsp;
+
+## 什麼情境該用哪一招
+
+如果你只想先知道「我現在到底要用哪個 API」，先看這張表就夠了。
+
+| 你的目的 | 最常用做法 | 為什麼 |
+|----------|------------|--------|
+| 等某支 API 回來再驗 UI | `page.waitForResponse()` | 最精準，適合處理 race condition |
+| 阻擋、放行或檢查 request | `page.route()` | 可以在 request 出去前介入 |
+| 固定回傳假資料 | `route.fulfill()` | 建立穩定且可重現的測試情境 |
+| 只想改真回應的一小部分 | `route.fetch()` + `route.fulfill()` | 保留真後端大部分行為 |
+| 想模擬一整套 CRUD 後端 | `page.route()` + 記憶體 state | 適合前端先行開發 |
+| 想知道頁面是否「大致載完」 | `page.waitForLoadState('networkidle')` | 只能當輔助訊號，不能濫用 |
+
+讀到這裡，如果你還是分不清 `mock API` 與 `fake backend`，先記一句就好：
+
+- `mock API` = 回固定答案
+- `fake backend` = 答案會隨操作改變
+
+---
+
+&nbsp;
+
 ## 🍀 0601 - waitForResponse
 
 `waitForResponse()` 的本質不是「等一下網路」，而是**等待一筆符合條件的回應真正完成**。當頁面操作會觸發 API，而且 UI 更新又依賴該 API 結果時，這種等待通常比 `waitForTimeout()` 或盲等 `networkidle` 更精準。
+
+### 什麼時候會用到
+
+最典型的情境是：你點了一個按鈕，頁面會送 API，然後畫面會根據 API 結果更新。這時如果你只點擊後立刻驗畫面，很容易遇到資料還沒回來的 race condition。
+
+常見例子：
+
+- 登入後等待 `/api/me`
+- 搜尋後等待 `/api/search`
+- 儲存設定後等待 `/api/settings`
+
+### 最小基礎案例
+
+先看最小版，你只需要知道：**先開始等，再觸發操作。**
+
+```typescript
+const [response] = await Promise.all([
+  page.waitForResponse('**/api/profile'),
+  page.getByRole('button', { name: '載入個人資料' }).click(),
+])
+
+expect(response.status()).toBe(200)
+```
 
 ### waitForResponse 的核心觀念
 
@@ -161,6 +289,28 @@ test('登入成功後顯示使用者名稱', async ({ page }) => {
 
 `route interception` 是 Playwright 控制網路流量的核心能力。它能在 request 發出去之前攔截，決定要放行、阻擋、改寫或直接回傳假資料，因此不只適合測試，也很適合隔離第三方服務與製造邊界情境。
 
+### 什麼時候會用到
+
+當你不只是想「等 API」，而是想要在 request 出去前做點事情，就會用到 `route`。
+
+例如：
+
+- 阻擋 analytics，避免測試被第三方服務干擾
+- 攔截圖片或廣告請求，讓測試更穩
+- 先檢查 request body，再決定要不要放行
+
+### 最小基礎案例
+
+如果你是第一次接觸 `route`，先把它理解成「在路上攔車」。你攔到 request 後，可以選擇讓它過去，或直接攔下來。
+
+```typescript
+await page.route('**/analytics/**', async (route) => {
+  await route.abort()
+})
+
+await page.goto('https://example.com')
+```
+
 ### route interception 的核心觀念
 
 | 操作 | 代表意義 | 常見用途 |
@@ -233,6 +383,30 @@ test('結帳流程不依賴第三方 analytics 也能完成', async ({ page }) =
 
 `mock API` 是在**不依賴真實後端資料**的前提下，建立可重現的前端情境。它特別適合測試空狀態、錯誤狀態、極端資料、尚未完成的 API，或想讓測試在 CI 中更穩定時使用。
 
+### 什麼時候會用到
+
+當你要驗證的其實是前端畫面狀態，而不是後端服務本身時，`mock API` 會很有幫助。
+
+例如：
+
+- 商品列表為空時的 empty state
+- API 回 500 時的錯誤訊息
+- 搜尋不到資料時的提示與按鈕
+
+### 最小基礎案例
+
+這是最基本的 mock：不打真 API，直接回傳你指定的 JSON。
+
+```typescript
+await page.route('**/api/products', async (route) => {
+  await route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    json: { items: [] },
+  })
+})
+```
+
 ### mock API 的核心觀念
 
 | 情境 | 為什麼適合 mock |
@@ -300,6 +474,38 @@ test('商品列表為空時顯示 empty state', async ({ page }) => {
 ## 🍀 0604 - modify response
 
 `modify response` 的價值在於：**真實 request 照常送出，但回應進來後由測試再做局部改寫**。這在你想保留後端大部分真實行為、只想把某些欄位調成特殊狀態時非常實用。
+
+### 什麼時候會用到
+
+如果你覺得「整包 mock 太假」，但又想測某個平常不容易出現的條件，這時就很適合用 `modify response`。
+
+例如：
+
+- 真商品資料照拿，但把 `stock` 改成 `0`
+- 真會員資料照拿，但把 `membershipLevel` 改成 `VIP`
+- 真設定照拿，但把某個 feature flag 改成 `true`
+
+### 最小基礎案例
+
+你可以先把它想成兩步：
+
+1. 先向真後端拿資料
+2. 拿到後再改一小部分
+
+```typescript
+await page.route('**/api/profile', async (route) => {
+  const response = await route.fetch()
+  const data = await response.json()
+
+  await route.fulfill({
+    response,
+    json: {
+      ...data,
+      isVip: true,
+    },
+  })
+})
+```
 
 ### modify response 的核心觀念
 
@@ -373,6 +579,32 @@ test('VIP 使用者會看到額外折扣標籤', async ({ page }) => {
 ## 🍀 0605 - fake backend
 
 `fake backend` 比單次 `mock API` 更進一步：它不是只回一筆假回應，而是**在測試期間暫時扮演一個有狀態的後端**。這很適合前端開發中、後端尚未完成，或你想在本地建立完整 CRUD 流程但又不想連真 DB 時使用。
+
+### 什麼時候會用到
+
+當你的前端流程不是只打一支 API，而是會隨著操作不斷改變資料，`fake backend` 就比單純 mock 更接近需求。
+
+例如：
+
+- 待辦清單新增後要立刻出現在列表
+- 購物車刪除後總價要更新
+- 管理後台建立資料後，重新整理仍要看到新資料
+
+### 最小基礎案例
+
+最簡單的 fake backend，不需要資料庫，只要一份存在記憶體裡的陣列就能開始。
+
+```typescript
+const todos = [{ id: 1, title: '學 Playwright network' }]
+
+await page.route('**/api/todos', async (route) => {
+  await route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    json: { items: todos },
+  })
+})
+```
 
 ### fake backend 的核心觀念
 
@@ -491,6 +723,21 @@ test('使用 fake backend 驗證購物車新增與刪除流程', async ({ page }
 
 `networkidle` 是一種載入狀態，而不是萬用等待解法。它的概念通常是「目前網路活動降到很低，頁面暫時安靜下來」，但在現代 SPA、輪詢、analytics、WebSocket、SSE 場景中，這個條件很容易過早或永遠達不到。
 
+### 什麼時候會用到
+
+`networkidle` 比較像是「粗略判斷頁面先安靜下來沒」，適合初始載入、簡單靜態站或一些 RPA 腳本；但如果你要驗證的是特定業務流程，它通常不是第一選擇。
+
+### 最小基礎案例
+
+下面這種寫法可以用，但只適合頁面初次載入後的粗粒度等待：
+
+```typescript
+await page.goto('https://example.com')
+await page.waitForLoadState('networkidle')
+```
+
+真正做測試時，你通常還是要再接一個 UI 驗證，例如標題或列表是否出現。
+
 ### network idle 的核心觀念
 
 | 觀念 | 說明 |
@@ -561,6 +808,35 @@ test('搜尋後顯示正確結果，不依賴 networkidle 當唯一條件', asyn
 ## 🍀 0607 - GraphQL testing
 
 GraphQL 測試的難點在於：很多操作都打到同一支 `/graphql`，真正區分請求的不是 URL，而是 `operationName` 與 query / variables。這表示你不能用 REST 的思維只靠 endpoint 來等待或 mock。
+
+### 什麼時候會用到
+
+如果你的專案前端是打 GraphQL，而不是 REST API，這段才是你的重點。對初學者來說，先記住一件事就夠了：**GraphQL 很多 request 的 URL 一樣，所以你要看 body。**
+
+### 最小基礎案例
+
+最基本的做法，是先讀出 `operationName`，再決定要回什麼資料。
+
+```typescript
+await page.route('**/graphql', async (route) => {
+  const body = route.request().postDataJSON() as { operationName?: string }
+
+  if (body.operationName === 'GetProducts') {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      json: {
+        data: {
+          products: [],
+        },
+      },
+    })
+    return
+  }
+
+  await route.continue()
+})
+```
 
 ### GraphQL testing 的核心觀念
 
@@ -662,6 +938,24 @@ test('GraphQL 商品列表與加入購物車流程', async ({ page }) => {
 
 WebSocket 是長連線、事件驅動的即時通訊模型。對 Playwright 而言，測試重點通常不是「重建整個 socket server」，而是**觀察連線是否建立、訊息是否抵達，以及 UI 是否對即時事件做出正確反應**。
 
+### 什麼時候會用到
+
+如果你的畫面有「即時更新」特性，例如聊天室、通知中心、即時報價、監控儀表板，才比較會碰到這段。
+
+如果你現在還沒碰過 WebSocket，也不用緊張，先把它理解成：**伺服器可以主動把新消息推給頁面。**
+
+### 最小基礎案例
+
+最簡單的第一步，不是模擬整個即時系統，而是先觀察頁面有沒有真的建立 WebSocket。
+
+```typescript
+page.on('websocket', (webSocket) => {
+  console.log('建立連線：', webSocket.url())
+})
+
+await page.goto('https://example.com/chat')
+```
+
 ### WebSocket 的核心觀念
 
 | 面向 | 說明 |
@@ -733,6 +1027,12 @@ test('客服聊天室收到新訊息時更新 UI', async ({ page }) => {
 &nbsp;
 
 ## ⚡更多細節
+
+### 這一區適合什麼時候讀
+
+如果你目前還在熟悉 `waitForResponse()`、`route()`、`mock API` 的基本差異，建議先把主線讀完再回來看這一區。
+
+這裡放的是比較偏實戰排查、架構設計與進階判斷的內容，適合你已經開始自己寫 network 測試後，再回來補強。
 
 ### 🍀 0602.01 - route matching 與清理策略
 
