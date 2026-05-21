@@ -5,55 +5,63 @@
 通常可以這樣分：
 
 ```
-tests/
-  ui/
-    login.spec.ts
-    order-create.spec.ts
-    account-settings.spec.ts
-
-  api/
-    auth.api.spec.ts
-    orders.api.spec.ts
-    customers.api.spec.ts
-
-  e2e/
-    user-buy-product.spec.ts
-    admin-approve-order.spec.ts
-
-  integration/
-    order-status-sync.spec.ts
-
-  smoke/
-    critical-path.spec.ts
-
-src/
-  pages/
-    LoginPage.ts
-    OrdersPage.ts
-
-  components/
-    Header.ts
-    Sidebar.ts
-
-  api/
-    AuthApi.ts
-    OrdersApi.ts
-
-fixtures/
-  test.ts
-  users.fixture.ts
-
-test-data/
-  users.ts
-  orders.ts
-
-utils/
-  date.ts
-  random.ts
-  assertions.ts
-
-playwright.config.ts
+.
+├─ tests/                        # 放各種測試案例
+│  ├─ ui/                        # 單一畫面 / 單一功能 UI 測試
+│  │  ├─ login.spec.ts
+│  │  ├─ order-create.spec.ts
+│  │  └─ account-settings.spec.ts
+│  ├─ api/                       # API 測試
+│  │  ├─ auth.api.spec.ts
+│  │  ├─ orders.api.spec.ts
+│  │  └─ customers.api.spec.ts
+│  ├─ e2e/                       # 完整使用者流程測試
+│  │  ├─ user-buy-product.spec.ts
+│  │  └─ admin-approve-order.spec.ts
+│  ├─ integration/               # 跨模組 / 跨系統整合驗證
+│  │  └─ order-status-sync.spec.ts
+│  └─ smoke/                     # 部署後快速健康檢查
+│     └─ critical-path.spec.ts
+│
+├─ src/                          # 可重用的測試支援程式碼
+│  ├─ pages/                     # Page Object Model
+│  │  ├─ LoginPage.ts
+│  │  └─ OrdersPage.ts
+│  ├─ components/                # 可重用 UI 區塊封裝
+│  │  ├─ Header.ts
+│  │  └─ Sidebar.ts
+│  └─ api/                       # API 操作封裝
+│     ├─ AuthApi.ts
+│     └─ OrdersApi.ts
+│
+├─ fixtures/                     # 共用 fixture / 測試上下文
+│  ├─ test.ts
+│  └─ users.fixture.ts
+│
+├─ test-data/                    # 測試資料
+│  ├─ users.ts
+│  └─ orders.ts
+│
+├─ utils/                        # 共用工具函式
+│  ├─ date.ts
+│  ├─ random.ts
+│  └─ assertions.ts
+│
+└─ playwright.config.ts          # Playwright 全域設定
 ```
+
+### 一眼看懂每一層在做什麼
+
+| 目錄 | 用途 |
+| --- | --- |
+| `tests/` | 真正執行的測試案例，依測試類型分資料夾 |
+| `src/pages/` | 頁面操作與 selector 集中管理 |
+| `src/components/` | 可重複使用的區塊，例如 header、sidebar、dialog |
+| `src/api/` | API 呼叫封裝，避免測試檔直接寫 request 細節 |
+| `fixtures/` | 建立共用測試前置與注入測試物件 |
+| `test-data/` | 放假資料、測試案例資料、payload |
+| `utils/` | 共用 helper，例如日期、亂數、客製 assertion |
+| `playwright.config.ts` | baseURL、projects、reporter、timeout 等設定 |
 
 &nbsp;
 ## 建議分類邏輯：
@@ -146,49 +154,48 @@ export class LoginPage {
 ### 小專案：
 
 ```
-tests/
-  login.spec.ts
-  orders.spec.ts
-
-pages/
-  LoginPage.ts
-  OrdersPage.ts
+.
+├─ tests/
+│  ├─ login.spec.ts
+│  └─ orders.spec.ts
+└─ pages/
+   ├─ LoginPage.ts
+   └─ OrdersPage.ts
 ```
 
 &nbsp;
 ### 中大型專案：
 
 ```
-tests/
-  ui/
-  api/
-  e2e/
-
-src/
-  pages/
-  components/
-  api/
-  fixtures/
-  test-data/
-  utils/
+.
+├─ tests/
+│  ├─ ui/
+│  ├─ api/
+│  └─ e2e/
+└─ src/
+   ├─ pages/
+   ├─ components/
+   ├─ api/
+   ├─ fixtures/
+   ├─ test-data/
+   └─ utils/
 ```
 
 &nbsp;
 ### 企業級系統 / 多業務模組：
 
 ```
-tests/
-  securities/
-    account-opening/
-    order/
-    statement/
-
-  admin/
-  api/
-  smoke/
-
-src/
-  ...
+.
+├─ tests/
+│  ├─ securities/
+│  │  ├─ account-opening/
+│  │  ├─ order/
+│  │  └─ statement/
+│  ├─ admin/
+│  ├─ api/
+│  └─ smoke/
+└─ src/
+   └─ ...
 ```
 
 &nbsp;
@@ -214,14 +221,20 @@ account-opening.e2e.spec.ts
 ## 最推薦的起手式：
 
 ```
-tests/
-  ui/
-  api/
-  e2e/
-
-src/
-  pages/
-  fixtures/
-  test-data/
-  utils/
+.
+├─ tests/
+│  ├─ ui/
+│  ├─ api/
+│  └─ e2e/
+└─ src/
+   ├─ pages/
+   ├─ fixtures/
+   ├─ test-data/
+   └─ utils/
 ```
+
+這種起手式的優點是：
+
+- `tests/` 專心放測試案例
+- `src/` 專心放可重用邏輯
+- 一開始不會拆太細，但後續也很好擴充
